@@ -1,4 +1,4 @@
-import spinmob as sm
+#import spinmob as sm
 import numpy as np
 import Chn
 import pylab as plb
@@ -50,7 +50,7 @@ def guassianFit(x, y):
     x0 = x[ind] #x0 is the peak value x-coord (channel number)
     popt, pcov = curve_fit(gaus, x, y, p0=[100, x0, 5]) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
 
-    plt.plot(x, y, 'b+:', label='data')
+    plt.plot(x, y, 'b+:', label='data', linestyle='None')
     plt.plot(x, gaus(x, *popt), 'ro:', label='fit')
     plt.legend()
     plt.xlabel('Channels')
@@ -67,13 +67,13 @@ def calibrate():
 
     for n in range(1,8):
         ch = Chn.Chn("Calibration/Pulse_"+str(n)+"V_0111.chn")
-        y = ch.spectrum
+        y = ch.spectrum[0:1200]
         x = np.arange(len(y))
         mean_temp, sigma_temp = guassianFit(x, y)
         mean.append(mean_temp)
         sigma.append(sigma_temp)
     x = np.arange(1, 8)
-    plt.errorbar(x,mean,sigma)
+    plt.errorbar(x,mean,yerr=sigma,color='red',markersize='100')
     axes = plt.gca()
     axes.set_xlim([0,8])
 
@@ -84,8 +84,7 @@ def calibrate():
     print('Slope: %f'%m)
     plt.show()
 
-def main():
-    calibrate()
+calibrate()
 
 
 #def removeAsymmetry(Edata, Ndata):
