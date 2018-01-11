@@ -1,6 +1,10 @@
 import spinmob as sm
 import numpy as np
+import Chn
 
+ch1 = Chn.Chn("Calibration/Pulse_1V_0111.chn")
+y = ch1.spectrum
+x = np.array
 
 ################################# Transform from channel number data to energy ###########################################
 
@@ -31,16 +35,19 @@ def extractHalfLives(tdata, Adata):
 
 ########################## Fit energy histogram to extract peak energy of the alpha particle ################################
 
-def extractAlphaEnergy(Edata, Ndata):
+def guassianFit(x, y):
 # x variable is the energy bin and the y variable is the number of events in that bin
-    if len(tdata)!= len(Adata):
+    if len(x)!= len(y):
         print("ERROR: Time and Activity data are not of the same length.")
         return
 
     f = sm.data.fitter()
+    f.set_data(x,y)
     f.set_functions(f='(1/np.sqrt(2*np.pi*sig**2)*np.exp(-(x-x0)^2/(2*sig**2))',
                     p='sig,x0')
+    f.fit()
     params = f.results[0]
+
 
 #def removeAsymmetry(Edata, Ndata):
 
