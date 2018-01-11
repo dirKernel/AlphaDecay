@@ -4,7 +4,7 @@ import numpy as np
 
 ################################# Transform from channel number data to energy ###########################################
 
-def convertChannelToEnergy(channelData,m=,b=):
+def convertChannelToEnergy(channelData,m,b):
     energyData = m*channelData + b*np.ones(len(channelData))
     return energyData
 
@@ -42,7 +42,7 @@ def extractAlphaEnergy(Edata, Ndata):
                     p='sig,x0')
     params = f.results[0]
 
-def removeAsymmetry(Edata, Ndata):
+#def removeAsymmetry(Edata, Ndata):
 
 
 ########################### Determine stopping power as a function of distance ###############################################
