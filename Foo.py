@@ -7,14 +7,6 @@ from scipy.optimize import curve_fit
 from scipy import asarray as ar,exp
 
 
-
-
-
-ch1 = Chn.Chn("Calibration/Pulse_2V_0111.chn")
-y = ch1.spectrum[0:500]
-x = np.arange(len(y))[0:500]
-
-
 ################################# Transform from channel number data to energy ###########################################
 
 def convertChannelToEnergy(channelData,m,b):
@@ -49,61 +41,51 @@ def gaus(x, a, x0, sigma):
 ########################## Fit energy histogram to extract peak energy of the alpha particle ################################
 
 def guassianFit(x, y):
-# x variable is the energy bin and the y variable is the number of events in that bin
-#     if len(x)!= len(y):
-#         print("ERROR: Time and Activity data are not of the same length.")
-#         return
-#     print(np.pi)
-#
-#     print(x)
-#     print(y)
-#     f = sm.data.fitter('a*exp(-(x-x0)**2/(2*sig**2))','sig=2,x0=1000,a=900')
-#     f.set_data(x,y)
-#     f.fit()
-#     #f.ginput()
-#     params = f.results[0]
-#     return params
 
     n = len(x)  # the number of data
     mean = sum(x * y) / n  # note this correction
     sigma = sum(y * (x - mean) ** 2) / n  # note this correction
 
+    ind = np.argmax(y) #to get the peak value x-coord
+    x0 = x[ind] #x0 is the peak value x-coord (channel number)
+    popt, pcov = curve_fit(gaus, x, y, p0=[100, x0, 5]) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
 
-
-    ind = np.argmax(y)
-    x0 = x[indß]
-    popt, pcov = curve_fit(gaus, x, y, p0=[100, x0, 5])
-
-    # plt.plot(x, y, 'b+:', label='data')
-    # plt.plot(x, gaus(x, *popt), 'ro:', label='fit')
-    # plt.legend()
-    # plt.title('Fig. 3 - Fit for Time Constant')
-    # plt.xlabel('Time (s)')
-    # plt.ylabel('Voltage (V)')
-    #plt.show()
-    print(popt[1])
-    print(popt[2])
-    #plt.show()
+    plt.plot(x, y, 'b+:', label='data')
+    plt.plot(x, gaus(x, *popt), 'ro:', label='fit')
+    plt.legend()
+    plt.xlabel('Channels')
+    plt.ylabel('Counts')
+    print('Mean: %f'%popt[1])
+    print('Sigma: %f'%popt[2])
+    plt.show()
 
     return popt[1],popt[2]
 
 
+def calibrate():
+    mean, sigma = [], []
 
+    for n in range(1,8):
+        ch = Chn.Chn("Calibration/Pulse_"+str(n)+"V_0111.chn")
+        y = ch.spectrum
+        x = np.arange(len(y))
+        mean_temp, sigma_temp = guassianFit(x, y)
+        mean.append(mean_temp)
+        sigma.append(sigma_temp)
+    x = np.arange(1, 8)
+    plt.errorbar(x,mean,sigma)
+    axes = plt.gca()
+    axes.set_xlim([0,8])
 
-print(guassianFit(x,y))
+    m,b = np.polyfit(x,mean,1)
+    xx = np.linspace(0,7,1000)
+    plt.plot(xx, m*xx+b*np.ones(len(xx)))
+    print('Intercept: %f'%b)
+    print('Slope: %f'%m)
+    plt.show()
 
-mean, sigma = [], []
-
-for n in range(1,8):
-    ch = Chn.Chn("Calibration/Pulse_"+str(n)+"V_0111.chn")
-    y = ch.spectrum
-    x = np.arange(len(y))
-    mean_temp, sigma_temp = guassianFit(x, y)
-    mean.append(mean_temp)
-    sigma.append(sigma_temp)
-#plt.clear()
-plt.errorbar(np.arange(1,8),mean,sigma)
-plt.show()
+def main():
+    calibrate()
 
 
 #def removeAsymmetry(Edata, Ndata):
