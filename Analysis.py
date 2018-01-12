@@ -86,13 +86,13 @@ def calibrate():
     plt.show()
 
 def exGauss(x, l, s, m):
-    return l/2*np.exp(1/2*(2*x+l*s*s-2*m));    
+    return l/2*np.exp(1/2*(2*x+l*s*s-2*m))*(1-sp.special.erfc((x+l*s*s-m)/(math.sqrt(2)*s)));    
     
 def fitExGauss():
     ch = Chn.Chn("Calibration/Am_0111_1.chn")
     y = ch.spectrum
     x = np.arange(len(y))
-    popt, pcov = curve_fit(exGauss, x, y, p0=[1, 1, 1200], maxfev=5000)
+    popt, pcov = curve_fit(exGauss, x, y, p0=[1, 1, 1200], maxfev=500000)
     plt.plot(x, y, 'b+:', label='data', linestyle='None')
     plt.plot(x, exGauss(x, *popt), 'ro:', label='fit')
     plt.legend()
