@@ -58,7 +58,7 @@ def guassianFit(x, y):
     plt.ylabel('Counts')
     print('Mean: %f'%popt[1])
     print('Sigma: %f'%popt[2])
-    plt.show()
+    #plt.show()
 
     return popt[1],popt[2]
 
@@ -83,7 +83,8 @@ def calibrate_linear():
     plt.plot(xx, m*xx+b*np.ones(len(xx)))
     print('Intercept: %f'%b)
     print('Slope: %f'%m)
-    plt.show()
+    return b
+    #plt.show()
     
 def gaus_exp(x, a, b, c, x0, sigma):
     return a * exp(-(x - x0) ** 2 / (2 * sigma ** 2)) + b * exp(c * x)
@@ -94,8 +95,7 @@ am_y = am.spectrum
 am_x = np.argmax(am_y)
 print('Channel of peak for Am: %d'%am_x)
 
-<<<<<<< HEAD:Foo.py
-=======
+
 def exGauss(x, l, s, m):
     return l/2*np.exp(1/2*(2*x+l*s*s-2*m))*(1-sp.special.erfc((x+l*s*s-m)/(math.sqrt(2)*s)));    
     
@@ -112,13 +112,26 @@ def fitExGauss():
     print('Mean: %f'%popt[2])
     print('Sigma: %f'%popt[1])
     print('Lambda: %f'%popt[0])
-    plt.show()
->>>>>>> 42b9f55506926d9311797b8adbee00319cca6e0e:Analysis.py
+    #plt.show()
 
     return popt[2]
-    
-#calibrate()
-fitExGauss()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+calibrate()
+#fitExGauss()
 
 #def removeAsymmetry(Edata, Ndata):
 
