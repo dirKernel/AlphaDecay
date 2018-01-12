@@ -6,6 +6,7 @@ from scipy.optimize import curve_fit
 import scipy as sp
 import math
 import spinmob as s
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 ################################# Transform from channel number data to energy ###########################################
 
@@ -76,14 +77,14 @@ def expGauss(x, A, l, s, m):
     return A*l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))    
     
 def expGaussFit_scipy():
-    fig1 = plt.figure(1)
-    frame1=fig1.add_axes((.1,.1,.8,0.6))
-    frame1.set_xticklabels([]) #Remove x-tic labels for the first frame
     ch = Chn.Chn("Calibration/Am_0111_1.chn")
     y = ch.spectrum[1100:1300]
     x = np.arange(len(y))
+    yerr = []
+    for ele in y:
+        yerr.append(math.sqrt(ele))
     popt, pcov = curve_fit(expGauss, x, y,p0=[150, 0.1, 0.1, 250], maxfev=50000)
-    plt.plot(x, y, 'b+', label='data', linestyle='None')
+    plt.errorbar(x, y, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', label='data', linestyle='None', markersize=3,color='k')
     plt.plot(x, expGauss(x, *popt), '-r', label='fit')
     plt.legend()
     plt.xlabel('Channels')
@@ -93,8 +94,14 @@ def expGaussFit_scipy():
     print('Lambda: %f'%popt[1])
     
     difference = expGauss(x,*popt)-y
-    frame2=fig1.add_axes((.1,.75,.8,.2))        
-    plt.plot(x,difference,'b+')
+    axes = plt.gca()
+    divider = make_axes_locatable(axes)
+    axes2 = divider.append_axes("top", size="20%", pad=0)
+    axes.figure.add_axes(axes2)
+    axes2.set_xticks([])
+    axes2.set_yticks([-10,0,10])
+    axes2.axhline(y=0, color='r', linestyle='-')
+    axes2.plot(x,difference,'k+',markersize=3)
 
     plt.show()
 
@@ -117,7 +124,7 @@ def expGaussFit_spinmob():
 
 #calibrateLinearFit()
 expGaussFit_scipy()
-#expGaussFit_spinmob()
+#expGaussFit_spinmob() # don't use this but the scipy one
 
 ########################## Fit energy histogram to extract peak energy of the alpha particle ################################
 ########################### Determine stopping power as a function of distance ###############################################
