@@ -53,7 +53,6 @@ def guassianFit(x, y):
 
 def calibrateLinearFit():
     mean, sigma = [], []
-
     for n in range(1,8):
         ch = Chn.Chn("Calibration/Pulse_"+str(n)+"V_0111.chn")
         y = ch.spectrum[0:1200]
@@ -74,24 +73,32 @@ def calibrateLinearFit():
     plt.show()
 
 def expGauss(x, A, l, s, m):
-    return A * l / 2 * np.exp (l / 2 * (2 * x - 2 * m + l * s * s)) * (1 - sp.special.erf ((x + l * s * s - m) / (math.sqrt(2) * s)))    
+    return A*l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))    
     
 def expGaussFit_scipy():
+    fig1 = plt.figure(1)
+    frame1=fig1.add_axes((.1,.1,.8,0.6))
+    frame1.set_xticklabels([]) #Remove x-tic labels for the first frame
     ch = Chn.Chn("Calibration/Am_0111_1.chn")
     y = ch.spectrum[1100:1300]
     x = np.arange(len(y))
     popt, pcov = curve_fit(expGauss, x, y,p0=[150, 0.1, 0.1, 250], maxfev=50000)
-    plt.plot(x, y, 'b+:', label='data', linestyle='None')
-    plt.plot(x, expGauss(x, *popt), 'rx:', label='fit')
+    plt.plot(x, y, 'b+', label='data', linestyle='None')
+    plt.plot(x, expGauss(x, *popt), '-r', label='fit')
     plt.legend()
     plt.xlabel('Channels')
     plt.ylabel('Counts')
     print('Mean: %f'%popt[3])
     print('Sigma: %f'%popt[2])
     print('Lambda: %f'%popt[1])
+    
+    difference = expGauss(x,*popt)-y
+    frame2=fig1.add_axes((.1,.75,.8,.2))        
+    plt.plot(x,difference,'b+')
+
     plt.show()
 
-    return popt[3]
+    return popt[3] # return the mean channel values
 
 def emg(x,m,s,l):
     return l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(np.sqrt(2)*s)))
@@ -108,9 +115,9 @@ def expGaussFit_spinmob():
     my_fitter.set_data(x,y)
     my_fitter.fit()
 
-calibrateLinearFit()
+#calibrateLinearFit()
 expGaussFit_scipy()
-expGaussFit_spinmob()
+#expGaussFit_spinmob()
 
 ########################## Fit energy histogram to extract peak energy of the alpha particle ################################
 ########################### Determine stopping power as a function of distance ###############################################
