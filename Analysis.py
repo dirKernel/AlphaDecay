@@ -1,11 +1,12 @@
+#import spinmob as sm
 import numpy as np
 import Chn
 import pylab as plb
 import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, leastsq
 import scipy as sp
 import math
-import spinmob as s
+
 
 ################################# Transform from channel number data to energy ###########################################
 
@@ -32,16 +33,26 @@ def extractHalfLives(tdata, Adata):
 
     return np.asarray([T1,T2])
 
-def gauss(x, a, x0, sigma):
-    return a*np.exp(-(x-x0)**2/(2*sigma**2))
+
+
+def gaus(x, a, x0, sigma):
+    return a * np.exp(-(x - x0) ** 2 / (2 * sigma ** 2))
+
+
+########################## Fit energy histogram to extract peak energy of the alpha particle ################################
 
 def guassianFit(x, y):
 
+    n = len(x)  # the number of data
+    mean = sum(x * y) / n  # note this correction
+    sigma = sum(y * (x - mean) ** 2) / n  # note this correction
+
     ind = np.argmax(y) #to get the peak value x-coord
     x0 = x[ind] #x0 is the peak value x-coord (channel number)
-    popt, pcov = curve_fit(gauss, x, y, p0=[100, x0, 5]) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
+    popt, pcov = curve_fit(gaus, x, y, p0=[100, x0, 5]) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
+
     plt.plot(x, y, 'b+:', label='data', linestyle='None')
-    plt.plot(x, gauss(x, *popt), 'ro:', label='fit')
+    plt.plot(x, gaus(x, *popt), 'ro:', label='fit')
     plt.legend()
     plt.xlabel('Channels')
     plt.ylabel('Counts')
@@ -51,7 +62,8 @@ def guassianFit(x, y):
 
     return popt[1],popt[2]
 
-def calibrateLinearFit():
+
+def calibrate_linear():
     mean, sigma = [], []
 
     for n in range(1,8):
@@ -71,7 +83,6 @@ def calibrateLinearFit():
     plt.plot(xx, m*xx+b*np.ones(len(xx)))
     print('Intercept: %f'%b)
     print('Slope: %f'%m)
-<<<<<<< HEAD
     return b
     #plt.show()
     
@@ -89,24 +100,15 @@ def exGauss(x, l, s, m):
     return l/2*np.exp(1/2*(2*x+l*s*s-2*m))*(1-sp.special.erfc((x+l*s*s-m)/(math.sqrt(2)*s)));    
     
 def fitExGauss():
-=======
-    plt.show()
-
-def expGauss(x, A, l, s, m):
-    return A * l / 2 * np.exp (l / 2 * (2 * x - 2 * m + l * s * s)) * (1 - sp.special.erf ((x + l * s * s - m) / (math.sqrt(2) * s)))    
-    
-def expGaussFit_scipy():
->>>>>>> a674d4a18d94803863abb906e98ac765d7a6fa71
     ch = Chn.Chn("Calibration/Am_0111_1.chn")
-    y = ch.spectrum[1100:1300]
+    y = ch.spectrum
     x = np.arange(len(y))
-    popt, pcov = curve_fit(expGauss, x, y,p0=[150, 0.1, 0.1, 250], maxfev=50000)
+    popt, pcov = curve_fit(exGauss, x, y, p0=[1, 1, 1200], maxfev=500000)
     plt.plot(x, y, 'b+:', label='data', linestyle='None')
-    plt.plot(x, expGauss(x, *popt), 'rx:', label='fit')
+    plt.plot(x, exGauss(x, *popt), 'ro:', label='fit')
     plt.legend()
     plt.xlabel('Channels')
     plt.ylabel('Counts')
-<<<<<<< HEAD
     print('Mean: %f'%popt[2])
     print('Sigma: %f'%popt[1])
     print('Lambda: %f'%popt[0])
@@ -130,34 +132,9 @@ def expGaussFit_scipy():
 
 calibrate()
 #fitExGauss()
-=======
-    print('Mean: %f'%popt[3])
-    print('Sigma: %f'%popt[2])
-    print('Lambda: %f'%popt[1])
-    plt.show()
 
-    return popt[3]
->>>>>>> a674d4a18d94803863abb906e98ac765d7a6fa71
+#def removeAsymmetry(Edata, Ndata):
 
-def emg(x,m,s,l):
-    return l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(np.sqrt(2)*s)))
 
-def simple(x,A,m,s,l):
-    return A*emg(x,m,s,l)
-
-def expGaussFit_spinmob():
-    my_fitter = s.data.fitter()
-    my_fitter.set_functions(f=simple, p='A=200,m=250,s=0.1,l=0.1')
-    ch = Chn.Chn("Calibration/Am_0111_1.chn")
-    y = ch.spectrum[1000:1300]
-    x = np.arange(len(y))
-    my_fitter.set_data(x,y)
-    my_fitter.fit()
-
-calibrateLinearFit()
-expGaussFit_scipy()
-expGaussFit_spinmob()
-
-########################## Fit energy histogram to extract peak energy of the alpha particle ################################
 ########################### Determine stopping power as a function of distance ###############################################
 
