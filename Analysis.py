@@ -3,8 +3,9 @@ import numpy as np
 import Chn
 import pylab as plb
 import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
-from scipy import asarray as ar,exp
+from scipy.optimize import curve_fit, leastsq
+import scipy as sp
+import math
 
 
 ################################# Transform from channel number data to energy ###########################################
@@ -35,7 +36,7 @@ def extractHalfLives(tdata, Adata):
 
 
 def gaus(x, a, x0, sigma):
-    return a * exp(-(x - x0) ** 2 / (2 * sigma ** 2))
+    return a * np.exp(-(x - x0) ** 2 / (2 * sigma ** 2))
 
 
 ########################## Fit energy histogram to extract peak energy of the alpha particle ################################
@@ -93,7 +94,31 @@ am_y = am.spectrum
 am_x = np.argmax(am_y)
 print('Channel of peak for Am: %d'%am_x)
 
+<<<<<<< HEAD:Foo.py
+=======
+def exGauss(x, l, s, m):
+    return l/2*np.exp(1/2*(2*x+l*s*s-2*m))*(1-sp.special.erfc((x+l*s*s-m)/(math.sqrt(2)*s)));    
+    
+def fitExGauss():
+    ch = Chn.Chn("Calibration/Am_0111_1.chn")
+    y = ch.spectrum
+    x = np.arange(len(y))
+    popt, pcov = curve_fit(exGauss, x, y, p0=[1, 1, 1200], maxfev=500000)
+    plt.plot(x, y, 'b+:', label='data', linestyle='None')
+    plt.plot(x, exGauss(x, *popt), 'ro:', label='fit')
+    plt.legend()
+    plt.xlabel('Channels')
+    plt.ylabel('Counts')
+    print('Mean: %f'%popt[2])
+    print('Sigma: %f'%popt[1])
+    print('Lambda: %f'%popt[0])
+    plt.show()
+>>>>>>> 42b9f55506926d9311797b8adbee00319cca6e0e:Analysis.py
 
+    return popt[2]
+    
+#calibrate()
+fitExGauss()
 
 #def removeAsymmetry(Edata, Ndata):
 
