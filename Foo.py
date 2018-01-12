@@ -62,7 +62,7 @@ def guassianFit(x, y):
     return popt[1],popt[2]
 
 
-def calibrate():
+def calibrate_linear():
     mean, sigma = [], []
 
     for n in range(1,8):
@@ -73,7 +73,7 @@ def calibrate():
         mean.append(mean_temp)
         sigma.append(sigma_temp)
     x = np.arange(1, 8)
-    plt.errorbar(x,mean,yerr=sigma,color='red',markersize='100')
+    plt.errorbar(x,mean,yerr=sigma,color='red',markersize='100',linestyle='None')
     axes = plt.gca()
     axes.set_xlim([0,8])
 
@@ -83,8 +83,16 @@ def calibrate():
     print('Intercept: %f'%b)
     print('Slope: %f'%m)
     plt.show()
+    
+def gaus_exp(x, a, b, c, x0, sigma):
+    return a * exp(-(x - x0) ** 2 / (2 * sigma ** 2)) + b * exp(c * x)
 
-calibrate()
+calibrate_linear()
+am = Chn.Chn('Calibration/Am_0111_1.Chn')
+am_y = am.spectrum
+am_x = np.argmax(am_y)
+print('Channel of peak for Am: %d'%am_x)
+
 
 
 #def removeAsymmetry(Edata, Ndata):
