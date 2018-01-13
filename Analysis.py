@@ -77,7 +77,7 @@ def expGauss(x, A, l, s, m):
     return A*l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))    
     
 def expGaussFit_scipy(x, y, yerr, p0, res_tick=[-3,0,3]):
-    fig = plt.figure()
+    plt.figure()
     popt, pcov = curve_fit(expGauss, x, y,p0=p0, maxfev=50000)
     plt.errorbar(x, y, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
                  label='Data', linestyle='None', markersize=3,color='k')
@@ -170,7 +170,7 @@ def pressureData():
         peak_means.append(m+x0-100)
         peak_means_e.append(m_err)
         fitfunc.append(func)
-    fig = plt.figure()
+    plt.figure()
     x = [0,50,100,150,200,250,300,350,400,450,470]
     m,b = np.polyfit(x,peak_means,1)
     xx = np.linspace(x[0],x[-1])
