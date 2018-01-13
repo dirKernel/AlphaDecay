@@ -184,7 +184,7 @@ def pressureData():
     plt.show()
         
 #calibrateLinearFit()
-os.listdir('pressure')
+print(os.listdir('pressure'))
 pressureData()
 AmChannel = fitAlphaPeak("Calibration/Am_0111_1.chn", \
                          [150, 0.1, 0.1, 250], left=100, right=40, res_tick=[-10,0,10])
