@@ -9,6 +9,23 @@ import spinmob as s
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
 
+def reducedChiSquare(x,y,fx,yerr,n):
+    """
+    :param x: x vector
+    :param y: y vector
+    :param fx: vector of f(x), where f is the fitting function
+    :param n: degrees of freedom = number of parameters describing the fit
+    :return: Reduced chi^2 of the fit. Ideally should be 1.
+    """
+    if len(x)!=len(y) or len(y)!=len(fx) or len(fx)!=len(x):
+        print("ERROR: x,y and fx should all have the same length.")
+        return
+    toReturn = 0.0
+    for n in range(len(x)):
+        toReturn += (y[n]-fx[n])**2/(yerr[n])**2
+    return toReturn / n
+
+
 def linearFit(x, y, yerr):
     """
     To perform linear fit; x: x data; y: y data; yerr: error on y data;
