@@ -328,3 +328,23 @@ def expGaussFit_spinmob():
 
 ########################## Fit energy histogram to extract peak energy of the alpha particle ################################
 ########################### Determine stopping power as a function of distance ###############################################
+
+def locallyDifferentiate(x,y,xerr,yerr):
+    """
+    :param x:
+    :param y:
+    :param xerr:
+    :param yerr:
+    :return:
+    """
+    X=[]
+    Xerr=[]
+    for n in len(x):
+        X.append((x[n+1]+x[n])/2)
+        Xerr.append((xerr[n+1]+xerr[n])/2)
+    print(len(X))
+    Y=[]
+    for n in len(x):
+        Y.append((y[n+1]-y[n])/(x[n+1]-x[n]))
+    print(len(Y))
+    return X,Y,
