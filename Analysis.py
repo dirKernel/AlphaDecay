@@ -331,11 +331,13 @@ def expGaussFit_spinmob():
 
 def locallyDifferentiate(x,y,xerr,yerr):
     """
-    :param x:
-    :param y:
-    :param xerr:
-    :param yerr:
-    :return:
+    :param x: x data vector
+    :param y: y data vector
+    :param xerr: vector of error on x data
+    :param yerr: vector of error on y data
+    :return: (X,Y) are the local derivative of the (x,y) data set. Ie for each adjacent data points in the input data set, a straight line is drawn between them
+    and the slope of the line is added to the vector Y. The vector X is compromised of the midpoints between the adjacent x's. The errors on X,Y are computed in terms
+     of xerr and yerr
     """
     X=[]
     Xerr=[]
@@ -344,7 +346,13 @@ def locallyDifferentiate(x,y,xerr,yerr):
         Xerr.append((xerr[n+1]+xerr[n])/2)
     print(len(X))
     Y=[]
+    Yerr=[]
     for n in len(x):
         Y.append((y[n+1]-y[n])/(x[n+1]-x[n]))
+        Yerr.append(Y[n]*np.sqrt(((xerr[n+1]**2+xerr[n]**2)/(x[n+1]-x[n])**2)+((yerr[n+1]**2+yerr[n]**2)/(y[n+1]-y[n])**2)))
     print(len(Y))
-    return X,Y,
+
+    return X,Y,Xerr,Yerr
+
+
+
