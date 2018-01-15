@@ -9,6 +9,23 @@ import spinmob as s
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
 
+def reducedChiSquare(x,y,fx,yerr,n):
+    """
+    :param x: x vector
+    :param y: y vector
+    :param fx: vector of f(x), where f is the fitting function
+    :param n: degrees of freedom = number of parameters describing the fit
+    :return: Reduced chi^2 of the fit. Ideally should be 1.
+    """
+    if len(x)!=len(y) or len(y)!=len(fx) or len(fx)!=len(x):
+        print("ERROR: x,y and fx should all have the same length.")
+        return
+    toReturn = 0.0
+    for n in range(len(x)):
+        toReturn += (y[n]-fx[n])**2/(yerr[n])**2
+    return toReturn / n
+
+
 def linearFit(x, y, yerr):
     """
     To perform linear fit; x: x data; y: y data; yerr: error on y data;
@@ -288,3 +305,31 @@ def expGaussFit_spinmob():
 
 ########################## Fit energy histogram to extract peak energy of the alpha particle ################################
 ########################### Determine stopping power as a function of distance ###############################################
+
+def locallyDifferentiate(x,y,xerr,yerr):
+    """
+    :param x: x data vector
+    :param y: y data vector
+    :param xerr: vector of error on x data
+    :param yerr: vector of error on y data
+    :return: (X,Y) are the local derivative of the (x,y) data set. Ie for each adjacent data points in the input data set, a straight line is drawn between them
+    and the slope of the line is added to the vector Y. The vector X is compromised of the midpoints between the adjacent x's. The errors on X,Y are computed in terms
+     of xerr and yerr
+    """
+    X=[]
+    Xerr=[]
+    for n in len(x):
+        X.append((x[n+1]+x[n])/2)
+        Xerr.append((xerr[n+1]+xerr[n])/2)
+    print(len(X))
+    Y=[]
+    Yerr=[]
+    for n in len(x):
+        Y.append((y[n+1]-y[n])/(x[n+1]-x[n]))
+        Yerr.append(Y[n]*np.sqrt(((xerr[n+1]**2+xerr[n]**2)/(x[n+1]-x[n])**2)+((yerr[n+1]**2+yerr[n]**2)/(y[n+1]-y[n])**2)))
+    print(len(Y))
+
+    return X,Y,Xerr,Yerr
+
+
+
