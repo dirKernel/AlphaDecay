@@ -44,9 +44,9 @@ def gauss(x, a, x0, sigma):
 def expGauss(x, A, l, s, m):
     return A*l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))    
 
-def expGaussFit_scipy(x, y, yerr, p0, res_tick=[-3,0,3]):
+def expGaussFit_scipy(x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     plt.figure()
-    popt, pcov = curve_fit(expGauss, x, y,p0=p0, maxfev=50000)
+    popt, pcov = curve_fit(expGauss, x, y, p0=p0, maxfev=50000)
     plt.errorbar(x, y, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
                  label='Data', linestyle='None', markersize=3,color='k')
     plt.plot(x, expGauss(x, *popt), '-r', label='Fit')
@@ -60,7 +60,7 @@ def expGaussFit_scipy(x, y, yerr, p0, res_tick=[-3,0,3]):
     print('A: %f with error %f'%(popt[0], perr[0]))
     
     # Plot residuals
-    difference = expGauss(x,*popt)-y
+    difference = y-expGauss(x,*popt)
     axes = plt.gca()
     divider = make_axes_locatable(axes)
     axes2 = divider.append_axes("top", size="20%", pad=0)
@@ -79,15 +79,15 @@ def expGaussFit_scipy(x, y, yerr, p0, res_tick=[-3,0,3]):
     func = func.replace('m',str(round(popt[3],1)))
     print('Fit='+func)
     
-    return popt[3], perr[3], func # return the mean channel values  
+    return popt, perr, func # return the mean channel values  
 
-def gaussianFit(x, y, yerr):
+def gaussianFit(x, y, yerr, left=20, right=20):
     ind = np.argmax(y) #to get the peak value x-coord
     x0 = x[ind] #x0 is the peak value x-coord (channel number)
     print(x0)
-    yy = y[x0-20:x0+20]
+    yy = y[x0-left:x0+right]
     xx = np.arange(len(yy))
-    #plt.plot(xx,yy)
+    yerr = yerr[x0-left:x+right]
     popt, pcov = curve_fit(gauss, xx, yy, p0=[200, 20, 1], sigma=yerr) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
     perr = np.diag(pcov)
     plt.plot(xx+x0-20, yy, 'b+:', label='data', linestyle='None')
@@ -108,22 +108,24 @@ def fitAlphaPeak(filepath, p0, left=100, right=100, res_tick=[-3,0,3]):
     This is the function to fit Alpha Peak
     filepath: full path to the file; p0: list of initial guess; left: how much away
     to the left from peak channel; right: how much away to the right from peak channel
+    res_tick: the residual plot y axis ticks
     """
     ch = Chn.Chn(filepath)
     y = ch.spectrum
+    print('Real time: %d'%ch.real_time)
     x = np.arange(len(y))
     ind = np.argmax(y)
     x0 = x[ind]
-    y = y[x0-left:x0+right]
-    x = np.arange(len(y))
-    yerr = []
-    for ele in y:
-        yerr.append(math.sqrt(ele))
-    mean, mean_err, func = expGaussFit_scipy(x, y, yerr, p0, res_tick)
-    print('On Plot Mean: %f with error %f'%(mean, mean_err)+'\n')
-    print('None Scaled Mean: %f with error %f'%(mean+x0-left, mean_err)+'\n')
+    yy = y[x0-left:x0+right]
+    xx = np.arange(len(yy))
+    yerr = np.sqrt(yy)
+    popt, perr, func = expGaussFit_scipy(xx, yy, yerr, p0, x0, left, res_tick)
+    mean = popt[3]
+    mean_e = perr[3]
+    #print('On Plot Mean: %f with error %f'%(mean, mean_e)+'\n')
+    print('None Scaled Mean: %f with error %f'%(mean, mean_e)+'\n')
     
-    return mean, mean_err, x0, func
+    return mean, mean_e, x0, func
 
 ################################# Transform from channel number data to energy ###########################################
 
@@ -216,34 +218,6 @@ def calibratePulses():
     
     return m, b, merr, berr
 
-#def calibrateLinearFit():
-#    mean, sigma = [], []
-#    for n in range(1,8):
-#        ch = Chn.Chn("Calibration_3/"+str(n)+"V_0112_2.chn")
-#        y = ch.spectrum
-#        x = np.arange(len(y))
-#        mean_temp, sigma_temp = guassianFit(x, y)
-#        mean.append(mean_temp)
-#        sigma.append(sigma_temp)
-#    x = np.arange(1,8)
-#    plt.errorbar(x,mean,yerr=sigma,color='red',markersize='100',linestyle='None')
-#    axes = plt.gca()
-#    axes.set_xlim([0,8])
-#
-#    print(np.polyfit(x,mean,1,cov=True))
-#    print('Intercept: %f'%b)
-#    print('Intercept Error: %f'%errm)
-#    print('Slope: %f'%m)
-#    print('Slope Error: %f'%errb)
-#    plt.show()
-
-
-
-
-
-    
-
-
 # For the pressure part
 def pressureData(folderName):
     """
@@ -255,11 +229,11 @@ def pressureData(folderName):
     pressure = []
     
     for d in data:
-        p = d.split('m')[0]
+        p = d.split('_')[0]
         pressure.append(int(p))
         
     for file in data:
-        m, m_err, x0, func = fitAlphaPeak('pressure/'+file, [250, 0.05, 5, 100])
+        m, m_err, x0, func = fitAlphaPeak(folderName+'/'+file, [600, 0.02, 7, 100],right=50)
         peak_means.append(m+x0-100)
         peak_means_e.append(m_err)
         fitfunc.append(func)
@@ -284,11 +258,14 @@ def pressureData(folderName):
     plt.show()
     
     return popt, perr 
-        
-calibratePulses()
-pressureData('pressure')
+
+
+######################## Function Calling Area ##################################
+    
+#calibratePulses()
+pressureData('Pressure_2')
 AmChannel = fitAlphaPeak("Calibration/Am_0111_1.chn", \
-                         [150, 0.1, 0.1, 250], left=100, right=40, res_tick=[-10,0,10])
+                         [500, 0.1, 0.1, 250], left=100, right=100, res_tick=[-10,0,10])
 
 
 
@@ -316,7 +293,7 @@ AmChannel = fitAlphaPeak("Calibration/Am_0111_1.chn", \
 
 
 
-##### Backup ######3
+########################### Backup ################################################
 
 def emg(x,m,s,l):
     return l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(np.sqrt(2)*s)))
