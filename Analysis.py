@@ -139,7 +139,15 @@ def fitAlphaPeak(filePath, p0, left=100, right=100, res_tick=[-3,0,3]):
 
 ################################# Transform from channel number data to energy ###########################################
 
-def convertChannelToEnergy(channelData,m,b):
+
+
+
+def convertChannelToEnergy(channelData):
+    E0 = 5.485
+    #N0 = fitAlphaPeak("Calibration/Am_0111_1.chn",)
+    # ^ Americium reference energy and recorded channel number
+    #m =
+    #b =
     energyData = m*channelData + b*np.ones(len(channelData))
     return energyData
 
