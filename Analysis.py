@@ -127,7 +127,15 @@ def fitAlphaPeak(filepath, p0, left=100, right=100, res_tick=[-3,0,3]):
 
 ################################# Transform from channel number data to energy ###########################################
 
-def convertChannelToEnergy(channelData,m,b):
+
+
+
+def convertChannelToEnergy(channelData):
+    E0 = 5.485
+    #N0 = fitAlphaPeak("Calibration/Am_0111_1.chn",)
+    # ^ Americium reference energy and recorded channel number
+    #m =
+    #b =
     energyData = m*channelData + b*np.ones(len(channelData))
     return energyData
 
@@ -138,7 +146,7 @@ def extractHalfLives(tdata, Adata):
     if len(tdata)!= len(Adata):
         print("ERROR: Time and Activity data are not of the same length.")
         return
-    f = sm.data.fitter()
+    f = s.data.fitter()
     f.set_functions(f='N0*lambda1*lambda2*(np.exp(-lambda1*x)-np.exp(-lambda2*x))/(lambda2-lambda1)+N1*np.exp(-lambda2*t)',
                     p='lambda1=1.81e-5,lambda2=1.9e-4,N0=1.0e5,N1=1.0e2')
     params = f.results[0]
