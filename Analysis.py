@@ -81,7 +81,7 @@ def expGaussFit(x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     
     return popt, perr, func # return the mean channel values  
 
-def gaussianFit(x, y, yerr, p0=[250, 20, 2.5], left=20, right=20, res_tick=[-3,0,3]):
+def gaussianFit(x, y, yerr, p0=[300, 20, 2.5], left=20, right=20, res_tick=[-3,0,3]):
     ind = np.argmax(y) #to get the peak value x-coord
     x0 = x[ind] #x0 is the peak value x-coord (channel number)
     print(x0)
@@ -93,7 +93,10 @@ def gaussianFit(x, y, yerr, p0=[250, 20, 2.5], left=20, right=20, res_tick=[-3,0
     plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
                  label='Data', linestyle='None', markersize=5, color='k')
     xxx = np.linspace(min(xx),max(xx),1000)
-    plt.plot(xxx+x0-left, gauss(xxx, *popt), 'r-', label='fit')
+    plt.plot(xxx+x0-left, gauss(xxx, *popt), 'r-', label='Fit')
+    plt.legend()
+    plt.xlabel('Channels')
+    plt.ylabel('Counts')
     
     # Plot residuals
     difference = yy-gauss(xx,*popt)
@@ -106,9 +109,6 @@ def gaussianFit(x, y, yerr, p0=[250, 20, 2.5], left=20, right=20, res_tick=[-3,0
     axes2.axhline(y=0, color='r', linestyle='-')
     axes2.plot(xx,difference,'k+',markersize=3)
     
-    plt.legend()
-    plt.xlabel('Channels')
-    plt.ylabel('Counts')
     popt[1] = popt[1]+x0-left
     print('Mean: %f $\pm$ %f'%(popt[1], perr[1]))
     print('Sigma: %f'%popt[2])
@@ -180,7 +180,7 @@ def calibratePulses(folderName):
         y = ch.spectrum
         x = np.arange(len(y))
         yerr = np.sqrt(y)
-        popt, perr = gaussianFit(x, y, yerr, p0=[250, 20, 2.5])
+        popt, perr = gaussianFit(x, y, yerr, p0=[300, 20, 2.5], res_tick=[-10,0,10])
         mean.append(popt[1])
         sigma.append(popt[2])
         mean_e.append(perr[1])
