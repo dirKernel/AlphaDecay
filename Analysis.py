@@ -270,11 +270,11 @@ def pressureData(folderName):
 #m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('Calibration')
 m_press, m_press_e, b_press, b_press_e = pressureData('Pressure_2')
 
-#popt_am, perr_am, func_am = fitAlphaPeak("Americium/Am_0111_1.chn", \
-#                         [200, 1, 1, 100], left=100, right=50, res_tick=[-10,0,10])
-#m_am, m_am_e = popt_am[3], perr_am[3]
-#print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
-#      (m_am, m_am_e, func_am))
+popt_am, perr_am, func_am = fitAlphaPeak("Americium/Am_0111_1.chn", \
+                         [200, 1, 1, 100], left=100, right=50, res_tick=[-10,0,10])
+m_am, m_am_e = popt_am[3], perr_am[3]
+print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
+      (m_am, m_am_e, func_am))
 
 
 
