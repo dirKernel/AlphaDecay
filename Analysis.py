@@ -90,19 +90,21 @@ def gaussianFit(x, y, yerr, p0=[250, 20, 2.5], left=20, right=20, res_tick=[-3,0
     yerr = yerr[x0-left:x0+right]
     popt, pcov = curve_fit(gauss, xx, yy, p0=p0, maxfev=50000) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
     perr = np.diag(pcov)
-    plt.plot(xx+x0-left, yy, 'b+:', label='data', linestyle='None')
-    plt.plot(xx+x0-left, gauss(xx, *popt), 'r-', label='fit')
+    plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
+                 label='Data', linestyle='None', markersize=5, color='k')
+    xxx = np.linspace(min(xx),max(xx),1000)
+    plt.plot(xxx+x0-left, gauss(xxx, *popt), 'r-', label='fit')
     
-#    # Plot residuals
-#    difference = yy-gauss(xx,*popt)
-#    axes = plt.gca()
-#    divider = make_axes_locatable(axes)
-#    axes2 = divider.append_axes("top", size="20%", pad=0)
-#    axes.figure.add_axes(axes2)
-#    axes2.set_xticks([])
-#    axes2.set_yticks(res_tick)
-#    axes2.axhline(yy=0, color='r', linestyle='-')
-#    axes2.plot(xx,difference,'k+',markersize=3)
+    # Plot residuals
+    difference = yy-gauss(xx,*popt)
+    axes = plt.gca()
+    divider = make_axes_locatable(axes)
+    axes2 = divider.append_axes("top", size="20%", pad=0)
+    axes.figure.add_axes(axes2)
+    axes2.set_xticks([])
+    axes2.set_yticks(res_tick)
+    axes2.axhline(y=0, color='r', linestyle='-')
+    axes2.plot(xx,difference,'k+',markersize=3)
     
     plt.legend()
     plt.xlabel('Channels')
@@ -250,7 +252,7 @@ def pressureData(folderName):
 ######################## Function Calling Area ##################################
     
 m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('Calibration_4')
-m_press, m_press_e, b_press, b_press_e = pressureData('Pressure_2')
+#m_press, m_press_e, b_press, b_press_e = pressureData('Pressure_2')
 
 popt_am, perr_am, func_am = fitAlphaPeak("Calibration/Am_0111_1.chn", \
                          [200, 1, 1, 100], left=100, right=50, res_tick=[-10,0,10])
