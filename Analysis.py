@@ -144,17 +144,30 @@ def fitAlphaPeak(filePath, p0, left=100, right=100, res_tick=[-3,0,3]):
 
 
 
-def convertChannelToEnergy(channelData): 
-    E0 = 5.485 
-    N0 = fitAlphaPeak("Calibration/Am_0111_1.chn",[500, 0.1, 0.1, 250])[0] 
-    # ^ Americium reference energy and recorded channel number 
-    #a = calibratePulses()[0] 
-    #c = calibratePulses()[1] 
-    #print(a) 
-    #print(c)  
-    #m = 
-    #b =  
-    energyData = m*channelData + b*np.ones(len(channelData)) 
+def convertChannelToEnergy(channelData):
+
+    E0 = 5.485
+
+    N0 = fitAlphaPeak("Calibration/Am_0111_1.chn",[500, 0.1, 0.1, 250])[0]
+
+    # ^ Americium reference energy and recorded channel number
+
+    #a = calibratePulses()[0]
+
+    #c = calibratePulses()[1]
+
+    #print(a)
+
+    #print(c)
+
+
+    #m =
+
+    #b =
+
+
+    energyData = m*channelData + b*np.ones(len(channelData))
+
     return energyData
 ########################### Fit bismuth activity data in order to extract lead and bismuth half-lives ##########################
 
@@ -254,14 +267,14 @@ def pressureData(folderName):
 
 ######################## Function Calling Area ##################################
     
-m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('Calibration_4')
-#m_press, m_press_e, b_press, b_press_e = pressureData('Pressure_2')
+#m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('Calibration')
+m_press, m_press_e, b_press, b_press_e = pressureData('Pressure_2')
 
-popt_am, perr_am, func_am = fitAlphaPeak("Calibration/Am_0111_1.chn", \
-                         [200, 1, 1, 100], left=100, right=50, res_tick=[-10,0,10])
-m_am, m_am_e = popt_am[3], perr_am[3]
-print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
-      (m_am, m_am_e, func_am))
+#popt_am, perr_am, func_am = fitAlphaPeak("Americium/Am_0111_1.chn", \
+#                         [200, 1, 1, 100], left=100, right=50, res_tick=[-10,0,10])
+#m_am, m_am_e = popt_am[3], perr_am[3]
+#print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
+#      (m_am, m_am_e, func_am))
 
 
 
