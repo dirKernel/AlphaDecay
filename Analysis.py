@@ -38,26 +38,26 @@ def linearFit(x, y, yerr):
     
     return popt, perr
 
-def gauss(x, a, x0, sigma):
-    return a*np.exp(-(x-x0)**2/(2*sigma**2))
+def gauss(x, a, mean, sigma):
+    return a*np.exp(-(x-mean)**2/(2*sigma**2))
 
 def expGauss(x, A, l, s, m):
     return A*l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))    
 
-def expGaussFit_scipy(x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
+def expGaussFit(x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     plt.figure()
     popt, pcov = curve_fit(expGauss, x, y, p0=p0, maxfev=50000)
-    plt.errorbar(x, y, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
+    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
                  label='Data', linestyle='None', markersize=3,color='k')
-    plt.plot(x, expGauss(x, *popt), '-r', label='Fit')
+    plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
     plt.legend()
     plt.xlabel('Channels')
     plt.ylabel('Counts')
     perr = np.sqrt(np.diag(pcov))
-    print('\nMean: %f with error %f'%(popt[3], perr[3]))
-    print('Sigma: %f with error %f'%(popt[2], perr[2]))
-    print('Lambda: %f with error %f'%(popt[1], perr[1]))
-    print('A: %f with error %f'%(popt[0], perr[0]))
+    print('\nMean: %f $\pm$ %f'%(popt[3], perr[3]))
+    print('Sigma: %f $\pm$ %f'%(popt[2], perr[2]))
+    print('Lambda: %f $\pm$ %f'%(popt[1], perr[1]))
+    print('A: %f $\pm$ %f'%(popt[0], perr[0]))
     
     # Plot residuals
     difference = y-expGauss(x,*popt)
@@ -81,36 +81,47 @@ def expGaussFit_scipy(x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     
     return popt, perr, func # return the mean channel values  
 
-def gaussianFit(x, y, yerr, left=20, right=20):
+def gaussianFit(x, y, yerr, p0=[250, 20, 2.5], left=20, right=20, res_tick=[-3,0,3]):
     ind = np.argmax(y) #to get the peak value x-coord
     x0 = x[ind] #x0 is the peak value x-coord (channel number)
     print(x0)
     yy = y[x0-left:x0+right]
     xx = np.arange(len(yy))
-    yerr = yerr[x0-left:x+right]
-    popt, pcov = curve_fit(gauss, xx, yy, p0=[200, 20, 1], sigma=yerr) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
+    yerr = yerr[x0-left:x0+right]
+    popt, pcov = curve_fit(gauss, xx, yy, p0=p0, maxfev=50000) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
     perr = np.diag(pcov)
-    plt.plot(xx+x0-20, yy, 'b+:', label='data', linestyle='None')
-    plt.plot(xx+x0-20, gauss(xx, *popt), 'ro:', label='fit')
+    plt.plot(xx+x0-left, yy, 'b+:', label='data', linestyle='None')
+    plt.plot(xx+x0-left, gauss(xx, *popt), 'r-', label='fit')
+    
+    # Plot residuals
+    difference = yy-gauss(xx,*popt)
+    axes = plt.gca()
+    divider = make_axes_locatable(axes)
+    axes2 = divider.append_axes("top", size="20%", pad=0)
+    axes.figure.add_axes(axes2)
+    axes2.set_xticks([])
+    axes2.set_yticks(res_tick)
+    axes2.axhline(yy=0, color='r', linestyle='-')
+    axes2.plot(xx,difference,'k+',markersize=3)
+    
     plt.legend()
     plt.xlabel('Channels')
     plt.ylabel('Counts')
-    print('Mean: %f'%popt[1])
+    popt[1] = popt[1]+x0-left
+    print('Mean: %f $\pm$ %f'%(popt[1], perr[1]))
     print('Sigma: %f'%popt[2])
-    print('Error on the Mean: %f'%perr[1])
-    RealMean = popt[1]+x0-20
     plt.show()
 
-    return RealMean,perr[1]
+    return popt, perr
 
-def fitAlphaPeak(filepath, p0, left=100, right=100, res_tick=[-3,0,3]):
+def fitAlphaPeak(filePath, p0, left=100, right=100, res_tick=[-3,0,3]):
     """
     This is the function to fit Alpha Peak
     filepath: full path to the file; p0: list of initial guess; left: how much away
     to the left from peak channel; right: how much away to the right from peak channel
     res_tick: the residual plot y axis ticks
     """
-    ch = Chn.Chn(filepath)
+    ch = Chn.Chn(filePath)
     y = ch.spectrum
     print('Real time: %d'%ch.real_time)
     x = np.arange(len(y))
@@ -119,13 +130,12 @@ def fitAlphaPeak(filepath, p0, left=100, right=100, res_tick=[-3,0,3]):
     yy = y[x0-left:x0+right]
     xx = np.arange(len(yy))
     yerr = np.sqrt(yy)
-    popt, perr, func = expGaussFit_scipy(xx, yy, yerr, p0, x0, left, res_tick)
-    mean = popt[3]
-    mean_e = perr[3]
+    popt, perr, func = expGaussFit(xx, yy, yerr, p0, x0, left, res_tick)
+    popt[3] += x0-left
     #print('On Plot Mean: %f with error %f'%(mean, mean_e)+'\n')
-    print('None Scaled Mean: %f with error %f'%(mean, mean_e)+'\n')
+    print('Mean: %f $\pm$ %f'%(popt[3], perr[3])+'\n')
     
-    return mean, mean_e, x0, func
+    return popt, perr, func
 
 ################################# Transform from channel number data to energy ###########################################
 
@@ -140,7 +150,7 @@ def extractHalfLives(tdata, Adata):
     if len(tdata)!= len(Adata):
         print("ERROR: Time and Activity data are not of the same length.")
         return
-    f = sm.data.fitter()
+    f = s.data.fitter()
     f.set_functions(f='N0*lambda1*lambda2*(np.exp(-lambda1*x)-np.exp(-lambda2*x))/(lambda2-lambda1)+N1*np.exp(-lambda2*t)',
                     p='lambda1=1.81e-5,lambda2=1.9e-4,N0=1.0e5,N1=1.0e2')
     params = f.results[0]
@@ -152,71 +162,47 @@ def extractHalfLives(tdata, Adata):
 
     return np.asarray([T1,T2])
 
-
-#def gaussianFit(x, y, left=50, right=50):
-#    ind = np.argmax(y) #to get the peak value x-coord
-#    x0 = x[ind] #x0 is the peak value x-coord (channel number)
-#    y = y[x0-left:x0+right]
-#    popt, pcov = curve_fit(gauss, x, y, p0=[50, x0, 5]) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
-#    perr = np.diag(pcov)
-#    plt.plot(x, y, 'b+:', label='data', linestyle='None')
-#    plt.plot(x, gauss(x, *popt), 'ro:', label='fit')
-#    plt.legend()
-#    plt.xlabel('Channels')
-#    plt.ylabel('Counts')
-#    print('Mean: %f'%popt[1])
-#    print('Mean Error: %f'%perr[1])
-#    print('Sigma: %f'%popt[2])
-#    plt.show()
-#    RealMean = popt[1]+x0-left
-#
-#    return RealMean, popt[2] 
-#
-
-def calibratePulses():
-    mean, sigma= [], []
-    i = np.zeros(15)
-    for n in range(1,16):
-        i[n-1] = 1000+500*(n-1)
-        print(str(int(i[n-1])))
-        ch = Chn.Chn("Calibration_4/"+str(int(i[n-1]))+"mV_0115.chn")
+def calibratePulses(folderName):
+    mean, sigma, mean_e, vol = [], [], [], []
+    data = os.listdir(folderName)
+    for d in data:
+        ch = Chn.Chn(folderName+'/'+d)
         y = ch.spectrum
         x = np.arange(len(y))
         yerr = np.sqrt(y)
-        print('!!!!')
-        print(yerr)
-        mean_temp, sigma_temp = gaussianFit(x, y, yerr)
-        mean.append(mean_temp)
-        sigma.append(sigma_temp)
-    x = i/1000
-    plt.errorbar(x,mean,yerr=sigma,color='red',markersize='100',linestyle='None')
-    axes = plt.gca()
-    axes.set_xlim([0,8])
-
-    res = np.polyfit(x,mean,1, w=sigma,cov=True)[0]
-    m = res[0]
-    b = res[1]
-    cov = np.polyfit(x,mean,1,cov=True)[1]
-    merr = np.sqrt(cov[0][0])
-    berr = np.sqrt(cov[1][1])
-    xx = np.linspace(0,7,1000)
-    print(berr)
-    print(merr)
+        popt, perr = gaussianFit(x, y, yerr, p0=[250, 20, 2.5])
+        mean.append(popt[1])
+        sigma.append(popt[2])
+        mean_e.append(perr[1])
+        vol.append(int(d.split('_')[0]))
+    x = vol 
+    y = mean
+    yerr = mean_e
+    plt.errorbar(x, y, yerr=yerr, fmt='x', elinewidth=0.5 ,capsize=3, ecolor='k', \
+                 label='Data', linestyle='None', markersize=3, color='k')
+    popt, perr = linearFit(x, y, yerr)
+    m = popt[0]
+    b = popt[1]
+    m_e = perr[0]
+    b_e = perr[1]
+    xx = np.linspace(min(x), max(x))
     plt.plot()
-    plt.plot(xx, m*xx+b*np.ones(len(xx)))
-    print('Intercept: %f'%b)
-    print('Slope: %f'%m)
+    plt.plot(xx, m*xx+b*np.ones(len(xx)), color='r', label='Fit')
+    plt.xlabel('Voltage (mV)')
+    plt.ylabel('Mean Channel')
+    print('Intercept: %f $\pm$ %f'%(b,b_e))
+    print('Slope: %f $\pm$ %f'%(m,m_e))
+    plt.legend()
     plt.show()
     
-    return m, b, merr, berr
+    return m, b, m_e, b_e
 
-# For the pressure part
 def pressureData(folderName):
     """
     This function reads all pressure varied data from the directory and fit linearly;
     folderName: string of the folder name under root directory
     """
-    peak_means, peak_means_e, fitfunc = [], [], []
+    peak_means, peak_means_e, func = [], [], []
     data = os.listdir(folderName)
     pressure = []
     
@@ -225,10 +211,11 @@ def pressureData(folderName):
         pressure.append(int(p))
         
     for file in data:
-        m, m_err, x0, func = fitAlphaPeak(folderName+'/'+file, [600, 0.02, 7, 100],right=50)
-        peak_means.append(m+x0-100)
-        peak_means_e.append(m_err)
-        fitfunc.append(func)
+        popt, perr, func = fitAlphaPeak(folderName+'/'+file, p0=[600, 0.02, 7, 100],\
+                                          right=80)
+        peak_means.append(popt[3])
+        peak_means_e.append(perr[3])
+        func.append(func)
         
     plt.figure()
     x = pressure
@@ -240,7 +227,7 @@ def pressureData(folderName):
     m_e = perr[0]
     b_e = perr[1]
     xx = np.linspace(min(x), max(x))
-    plt.plot(xx, m*xx+b*np.ones(len(xx)),label='Linear Fit')
+    plt.plot(xx, m*xx+b*np.ones(len(xx)),label='Fit')
     print('Intercept: %f $\pm$ %f'%(b,b_e))
     print('Slope: %f $\pm$ %f'%(m,m_e))
     plt.plot(x, y, 'kx', label='Data')
@@ -249,15 +236,19 @@ def pressureData(folderName):
     plt.legend()
     plt.show()
     
-    return popt, perr 
+    return m, m_e, b, b_e  
 
 
 ######################## Function Calling Area ##################################
     
-#calibratePulses()
-pressureData('Pressure_2')
-AmChannel = fitAlphaPeak("Calibration/Am_0111_1.chn", \
-                         [500, 0.1, 0.1, 250], left=100, right=100, res_tick=[-10,0,10])
+m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('Calibration_4')
+#m_press, m_press_e, b_press, b_press_e = pressureData('Pressure_2')
+
+popt_am, perr_am, func_am = fitAlphaPeak("Calibration/Am_0111_1.chn", \
+                         [200, 1, 1, 100], left=100, right=50, res_tick=[-10,0,10])
+m_am, m_am_e = popt_am[3], perr_am[3]
+print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
+      (m_am, m_am_e, func_am))
 
 
 
