@@ -182,13 +182,18 @@ def convertChannelToEnergy(channelData):
 
     return energyData
 ########################### Fit bismuth activity data in order to extract lead and bismuth half-lives ##########################
+def activityFitFunc(x, lambda1, lambda2, N0, N1):
+    return 'N0*lambda1*lambda2*(np.exp(-lambda1*x)-np.exp(-lambda2*x))/(lambda2-lambda1)+N1*np.exp(-lambda2*t)'
 
-def extractHalfLives(tdata, Adata):
-    #assume t is in seconds
-    if len(tdata)!= len(Adata):
+def activityFit(x, y, yerr):
+    if len(x)!= len(y):
         print("ERROR: Time and Activity data are not of the same length.")
         return
-    f = s.data.fitter()
+    popt, pcov = curve_fit(expGauss, x, y, p0=p0, maxfev=50000)
+    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
+                 label='Data', linestyle='None', markersize=3,color='k')
+    plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
+    
     f.set_functions(f='N0*lambda1*lambda2*(np.exp(-lambda1*x)-np.exp(-lambda2*x))/(lambda2-lambda1)+N1*np.exp(-lambda2*t)',
                     p='lambda1=1.81e-5,lambda2=1.9e-4,N0=1.0e5,N1=1.0e2')
     params = f.results[0]
@@ -290,11 +295,29 @@ def pressureData(folderName):
     plt.show()
     
     return m, m_e, b, b_e  
+    
 
 def halflifeMeasurement(folderName):
-    spectrum = chnsum(folderName)
-    plt.plot(spectrum)
+    files = os.listdir(folderName)
+    files.sort()
+    activity, elapse = [], []
+    for f in files:
+        ch = Chn.Chn(folderName+'/'+f)
+        spectrum = ch.spectrum
+        activity.append(sum(spectrum))
+        fileInd = int(f.split('_')[0])
+        elapse.append(fileInd*10*60) #10 minutes, starts at 0
+    
+    x = elapse
+    y = activity
+    yerr = np.sqrt(activity)
+    plt.plot(x, y, 'kx')
     plt.show()
+    
+    popt, perr = activityFit(x, y, yerr)
+    
+
+    
 
 ######################## Function Calling Area ##################################
     
