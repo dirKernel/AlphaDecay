@@ -12,10 +12,6 @@ from chnsum import chnsum
 import uncertainties as unc  
 import uncertainties.unumpy as unp  
 
-<<<<<<< HEAD
-
-=======
->>>>>>> b32495bf599a385d9b949d31199264dc69600177
 global E0 # americium energy needed for calibration
 global E0Err
 global calibIntercept
@@ -29,16 +25,7 @@ global interceptErr
 
 E0 = 5.485
 E0Err = 0.002
-N0 = fitAlphaPeak("Calibration/Am_0111_1.chn",[500, 0.1, 0.1, 250])[0]
 
-
-
-<<<<<<< HEAD
-
-
-
-=======
->>>>>>> b32495bf599a385d9b949d31199264dc69600177
 def reducedChiSquare(x,y,fx,yerr,n):
     """
     :param x: x vector
@@ -176,25 +163,22 @@ def fitAlphaPeak(filePath, p0, left=100, right=100, res_tick=[-3,0,3]):
 
 def convertChannelToEnergy(channelData):
 
-<<<<<<< HEAD
-=======
+
     E0 = 5.485
     
-    popt_am, perr_am, func_am = fitAlphaPeak("Americium/Am_0111_1.chn", \
-                             [200, 1, 1, 100], left=100, right=50, res_tick=[-10,0,10])
-    m_am, m_am_e = popt_am[3], perr_am[3]
-    print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
-          (m_am, m_am_e, func_am))
-
-    N0 = fitAlphaPeak("Calibration/Am_0111_1.chn",[500, 0.1, 0.1, 250])[0]
+#    popt_am, perr_am, func_am = fitAlphaPeak("Americium/Am_0111_1.chn", \
+#                             [200, 1, 1, 100], left=100, right=50, res_tick=[-10,0,10])
+#    m_am, m_am_e = popt_am[3], perr_am[3]
+#    print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
+#          (m_am, m_am_e, func_am))
+#
+#    N0 = fitAlphaPeak("Calibration/Am_0111_1.chn",[500, 0.1, 0.1, 250])[0]
 
     # ^ Americium reference energy and recorded channel number
 
     #a = calibratePulses()[0]
 
     #c = calibratePulses()[1]
->>>>>>> b32495bf599a385d9b949d31199264dc69600177
-
 
 
     energyData = m*channelData + b*np.ones(len(channelData))
@@ -202,6 +186,7 @@ def convertChannelToEnergy(channelData):
     return energyData
 
 ########################### Fit bismuth activity data in order to extract lead and bismuth half-lives ##########################
+
 def activityFitFunc(x, lambda1, lambda2, N0, N1):
     return 'N0*lambda1*lambda2*(np.exp(-lambda1*x)-np.exp(-lambda2*x))/(lambda2-lambda1)+N1*np.exp(-lambda2*t)'
 
@@ -250,27 +235,19 @@ def calibratePulses(folderName):
     ########## Define global variables which parameterize the conversion between channel number and energy ##################
     calibIntercept = b
     calibInterceptErr = b_e
-<<<<<<< HEAD
-    N0 = fitAlphaPeak("Calibration/Am_0111_1.chn", [500, 0.1, 0.1, 250])[0][3]
-    N0Err = fitAlphaPeak("Calibration/Am_0111_1.chn", [500, 0.1, 0.1, 250])[1][3]
+    
+    popt_am, perr_am, func_am = fitAlphaPeak("Americium/Am_0111_1.chn", \
+                         [200, 1, 1, 100], left=100, right=50, res_tick=[-10,0,10])
+    N0, N0Err = popt_am[3], perr_am[3]
+    print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
+      (N0, N0Err, func_am))
+
     slope = E0/(N0-calibIntercept)
     slopeErr = slope*np.sqrt((E0Err/E0)**2+(1/(N0-calibIntercept))**2*(calibInterceptErr**2+N0Err**2))
 
     intercept = E0*calibIntercept/(calibIntercept-N0)
     interceptErr = intercept*np.sqrt((E0Err/E0)**2+(N0*calibInterceptErr/(calibIntercept*(calibIntercept-N0)))**2+(N0Err/(calibIntercept-N0))**2)
 
-
-
-
-=======
-    popt_am, perr_am, func_am = fitAlphaPeak("Americium/Am_0111_1.chn", \
-                         [200, 1, 1, 100], left=100, right=50, res_tick=[-10,0,10])
-    N0, N0ERR = popt_am[3], perr_am[3]
-    print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
-      (N0, N0ERR, func_am))
-    #slope =
-
->>>>>>> b32495bf599a385d9b949d31199264dc69600177
     plt.legend()
     plt.show()
     
