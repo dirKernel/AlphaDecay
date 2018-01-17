@@ -11,6 +11,12 @@ import os
 from chnsum import chnsum
 
 global E0 # americium energy needed for calibration
+global calibIntercept
+global calibInterceptErr
+global N0
+global N0Err
+global slope
+global intercept
 
 E0 = 5.485
 
@@ -225,20 +231,18 @@ def calibratePulses(folderName):
     print('Intercept: %f $\pm$ %f'%(b,b_e))
     print('Slope: %f $\pm$ %f'%(m,m_e))
 
-
     ########## Define global variables which parameterize the conversion between channel number and energy ##################
 
-    global calibIntercept
-    global calibInterceptErr
+
+
     calibIntercept = b
     calibInterceptErr = b_e
-    global N0
-    N0 = fitAlphaPeak("Calibration/Am_0111_1.chn", [500, 0.1, 0.1, 250])[0]
+    N0 = fitAlphaPeak("Calibration/Am_0111_1.chn", [500, 0.1, 0.1, 250])[0][3]
+    N0Err = fitAlphaPeak("Calibration/Am_0111_1.chn", [500, 0.1, 0.1, 250])[1][3]
+    #slope =
 
 
 
-
-    
     plt.legend()
     plt.show()
 
