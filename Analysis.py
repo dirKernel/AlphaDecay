@@ -10,22 +10,27 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
 from chnsum import chnsum
 
-<<<<<<< HEAD
-=======
+
 global E0 # americium energy needed for calibration
+global E0Err
 global calibIntercept
 global calibInterceptErr
 global N0
 global N0Err
 global slope
+global slopeErr
 global intercept
+global interceptErr
 
 E0 = 5.485
+E0Err = 0.002
+N0 = fitAlphaPeak("Calibration/Am_0111_1.chn",[500, 0.1, 0.1, 250])[0]
 
 
 
 
->>>>>>> f299db0afd56e6fd8cf1c38c3ead097ca3084ff8
+
+
 def reducedChiSquare(x,y,fx,yerr,n):
     """
     :param x: x vector
@@ -163,24 +168,7 @@ def fitAlphaPeak(filePath, p0, left=100, right=100, res_tick=[-3,0,3]):
 
 def convertChannelToEnergy(channelData):
 
-    E0 = 5.485
 
-    N0 = fitAlphaPeak("Calibration/Am_0111_1.chn",[500, 0.1, 0.1, 250])[0]
-
-    # ^ Americium reference energy and recorded channel number
-
-    #a = calibratePulses()[0]
-
-    #c = calibratePulses()[1]
-
-    #print(a)
-
-    #print(c)
-
-
-    #m =
-
-    #b =
 
 
     energyData = m*channelData + b*np.ones(len(channelData))
@@ -234,8 +222,6 @@ def calibratePulses(folderName):
     plt.ylabel('Mean Channel')
     print('Intercept: %f $\pm$ %f'%(b,b_e))
     print('Slope: %f $\pm$ %f'%(m,m_e))
-<<<<<<< HEAD
-=======
 
     ########## Define global variables which parameterize the conversion between channel number and energy ##################
 
@@ -245,11 +231,15 @@ def calibratePulses(folderName):
     calibInterceptErr = b_e
     N0 = fitAlphaPeak("Calibration/Am_0111_1.chn", [500, 0.1, 0.1, 250])[0][3]
     N0Err = fitAlphaPeak("Calibration/Am_0111_1.chn", [500, 0.1, 0.1, 250])[1][3]
-    #slope =
+    slope = E0/(N0-calibIntercept)
+    slopeErr = slope*np.sqrt((E0Err/E0)**2+(1/(N0-calibIntercept))**2*(calibInterceptErr**2+N0Err**2))
+
+    intercept = E0*calibIntercept/(calibIntercept-N0)
+    interceptErr = intercept*np.sqrt((E0Err/E0)**2+(N0*calibInterceptErr/(calibIntercept*(calibIntercept-N0)))**2+(N0Err/(calibIntercept-N0))**2)
 
 
 
->>>>>>> f299db0afd56e6fd8cf1c38c3ead097ca3084ff8
+
     plt.legend()
     plt.show()
     
