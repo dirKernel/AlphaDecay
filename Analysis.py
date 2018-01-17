@@ -10,6 +10,22 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
 from chnsum import chnsum
 
+<<<<<<< HEAD
+=======
+global E0 # americium energy needed for calibration
+global calibIntercept
+global calibInterceptErr
+global N0
+global N0Err
+global slope
+global intercept
+
+E0 = 5.485
+
+
+
+
+>>>>>>> f299db0afd56e6fd8cf1c38c3ead097ca3084ff8
 def reducedChiSquare(x,y,fx,yerr,n):
     """
     :param x: x vector
@@ -218,6 +234,22 @@ def calibratePulses(folderName):
     plt.ylabel('Mean Channel')
     print('Intercept: %f $\pm$ %f'%(b,b_e))
     print('Slope: %f $\pm$ %f'%(m,m_e))
+<<<<<<< HEAD
+=======
+
+    ########## Define global variables which parameterize the conversion between channel number and energy ##################
+
+
+
+    calibIntercept = b
+    calibInterceptErr = b_e
+    N0 = fitAlphaPeak("Calibration/Am_0111_1.chn", [500, 0.1, 0.1, 250])[0][3]
+    N0Err = fitAlphaPeak("Calibration/Am_0111_1.chn", [500, 0.1, 0.1, 250])[1][3]
+    #slope =
+
+
+
+>>>>>>> f299db0afd56e6fd8cf1c38c3ead097ca3084ff8
     plt.legend()
     plt.show()
     
