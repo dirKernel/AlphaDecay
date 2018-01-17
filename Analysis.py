@@ -10,6 +10,13 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
 from chnsum import chnsum
 
+global E0 # americium energy needed for calibration
+
+E0 = 5.485
+
+
+
+
 def reducedChiSquare(x,y,fx,yerr,n):
     """
     :param x: x vector
@@ -147,8 +154,6 @@ def fitAlphaPeak(filePath, p0, left=100, right=100, res_tick=[-3,0,3]):
 
 def convertChannelToEnergy(channelData):
 
-    E0 = 5.485
-
     N0 = fitAlphaPeak("Calibration/Am_0111_1.chn",[500, 0.1, 0.1, 250])[0]
 
     # ^ Americium reference energy and recorded channel number
@@ -224,9 +229,26 @@ def calibratePulses(folderName):
     plt.ylabel('Mean Channel')
     print('Intercept: %f $\pm$ %f'%(b,b_e))
     print('Slope: %f $\pm$ %f'%(m,m_e))
+
+
+    ########## Define global variables which parameterize the conversion between channel number and energy ##################
+
+    global calibIntercept
+    global calibInterceptErr
+    calibIntercept = b
+    calibInterceptErr = b_e
+    global N0
+    N0 = fitAlphaPeak("Calibration/Am_0111_1.chn", [500, 0.1, 0.1, 250])[0]
+
+
+
+
+    
     plt.legend()
     plt.show()
-    
+
+
+
     return m, b, m_e, b_e
 
 def pressureData(folderName):
