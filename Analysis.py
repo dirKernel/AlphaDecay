@@ -9,6 +9,8 @@ import spinmob as s
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
 from chnsum import chnsum
+import uncertainties as unc  
+import uncertainties.unumpy as unp  
 
 global E0 # americium energy needed for calibration
 global calibIntercept
@@ -186,6 +188,7 @@ def convertChannelToEnergy(channelData):
     energyData = m*channelData + b*np.ones(len(channelData))
 
     return energyData
+
 ########################### Fit bismuth activity data in order to extract lead and bismuth half-lives ##########################
 def activityFitFunc(x, lambda1, lambda2, N0, N1):
     return 'N0*lambda1*lambda2*(np.exp(-lambda1*x)-np.exp(-lambda2*x))/(lambda2-lambda1)+N1*np.exp(-lambda2*t)'
@@ -235,8 +238,11 @@ def calibratePulses(folderName):
     ########## Define global variables which parameterize the conversion between channel number and energy ##################
     calibIntercept = b
     calibInterceptErr = b_e
-    N0 = fitAlphaPeak("Americium/Am_0111_1.chn", [500, 0.1, 0.1, 250])[0][3]
-    N0Err = fitAlphaPeak("Americium/Am_0111_1.chn", [500, 0.1, 0.1, 250])[1][3]
+    popt_am, perr_am, func_am = fitAlphaPeak("Americium/Am_0111_1.chn", \
+                         [200, 1, 1, 100], left=100, right=50, res_tick=[-10,0,10])
+    N0, N0ERR = popt_am[3], perr_am[3]
+    print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
+      (N0, N0ERR, func_am))
     #slope =
 
     plt.legend()
@@ -316,7 +322,7 @@ def halflifeMeasurement(folderName):
 
 ######################## Function Calling Area ##################################
     
-#m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('Calibration')
+m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('Calibration_4')
 #m_press, m_press_e, b_press, b_press_e = pressureData('Pressure_2')
 
 #popt_am, perr_am, func_am = fitAlphaPeak("Americium/Am_0111_1.chn", \
@@ -324,7 +330,8 @@ def halflifeMeasurement(folderName):
 #m_am, m_am_e = popt_am[3], perr_am[3]
 #print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
 #      (m_am, m_am_e, func_am))
-halflifeMeasurement('Decay_1')
+
+#halflifeMeasurement('Decay_1')
 
 
 
@@ -351,23 +358,6 @@ halflifeMeasurement('Decay_1')
 
 
 
-########################### Backup ################################################
-
-def emg(x,m,s,l):
-    return l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(np.sqrt(2)*s)))
-
-def simple(x,A,m,s,l):
-    return A*emg(x,m,s,l)
-
-def expGaussFit_spinmob():
-    # not used
-    my_fitter = s.data.fitter()
-    my_fitter.set_functions(f=simple, p='A=200,m=250,s=0.1,l=0.1')
-    ch = Chn.Chn("Calibration/Am_0111_1.chn")
-    y = ch.spectrum[1000:1300]
-    x = np.arange(len(y))
-    my_fitter.set_data(x,y)
-    my_fitter.fit()
 
 ########################## Fit energy histogram to extract peak energy of the alpha particle ################################
 ########################### Determine stopping power as a function of distance ###############################################
