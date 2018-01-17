@@ -10,13 +10,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
 from chnsum import chnsum
 
-global E0 # americium energy needed for calibration
-
-E0 = 5.485
-
-
-
-
 def reducedChiSquare(x,y,fx,yerr,n):
     """
     :param x: x vector
@@ -154,6 +147,8 @@ def fitAlphaPeak(filePath, p0, left=100, right=100, res_tick=[-3,0,3]):
 
 def convertChannelToEnergy(channelData):
 
+    E0 = 5.485
+
     N0 = fitAlphaPeak("Calibration/Am_0111_1.chn",[500, 0.1, 0.1, 250])[0]
 
     # ^ Americium reference energy and recorded channel number
@@ -183,21 +178,15 @@ def activityFit(x, y, yerr):
     if len(x)!= len(y):
         print("ERROR: Time and Activity data are not of the same length.")
         return
-    popt, pcov = curve_fit(expGauss, x, y, p0=p0, maxfev=50000)
-    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
+    popt, pcov = curve_fit(activityFitFunc, x, y, p0=[1.81e-5,1.9e-4,1.0e5,1.0e2],sigma=yerr, maxfev=50000)
+    perr = np.sqrt(np.diag(pcov))
+    plt.errorbar(x, y, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
                  label='Data', linestyle='None', markersize=3,color='k')
-    plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
-    
-    f.set_functions(f='N0*lambda1*lambda2*(np.exp(-lambda1*x)-np.exp(-lambda2*x))/(lambda2-lambda1)+N1*np.exp(-lambda2*t)',
-                    p='lambda1=1.81e-5,lambda2=1.9e-4,N0=1.0e5,N1=1.0e2')
-    params = f.results[0]
+    xx = np.linspace(min(x), max(x))
+    plt.plot(xx, activityFitFunc(xx, *popt), '-r', label='Fit')
+    plt.show()
 
-    T1=np.log(2)/params[0]
-    T2=np.log(2)/params[1]
-
-    print(f.results[1])
-
-    return np.asarray([T1,T2])
+    return popt, perr
 
 def calibratePulses(folderName):
     mean, sigma, mean_e, vol = [], [], [], []
@@ -229,26 +218,9 @@ def calibratePulses(folderName):
     plt.ylabel('Mean Channel')
     print('Intercept: %f $\pm$ %f'%(b,b_e))
     print('Slope: %f $\pm$ %f'%(m,m_e))
-
-
-    ########## Define global variables which parameterize the conversion between channel number and energy ##################
-
-    global calibIntercept
-    global calibInterceptErr
-    calibIntercept = b
-    calibInterceptErr = b_e
-    global N0
-    N0 = fitAlphaPeak("Calibration/Am_0111_1.chn", [500, 0.1, 0.1, 250])[0]
-
-
-
-
-    
     plt.legend()
     plt.show()
-
-
-
+    
     return m, b, m_e, b_e
 
 def pressureData(folderName):
@@ -307,10 +279,15 @@ def halflifeMeasurement(folderName):
     x = elapse
     y = activity
     yerr = np.sqrt(activity)
-    plt.plot(x, y, 'kx')
-    plt.show()
     
     popt, perr = activityFit(x, y, yerr)
+    
+    l1, l2 = popt[0], popt[1]
+    l1_e, l2_e = perr[0], perr[1]
+    
+    T1=np.log(2)/l1
+    T2=np.log(2)/l2
+    # We need to do a propagation of error to T1 and T2
     
 
     
