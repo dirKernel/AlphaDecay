@@ -10,8 +10,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
 from chnsum import chnsum
 
-<<<<<<< HEAD
-=======
 global E0 # americium energy needed for calibration
 global calibIntercept
 global calibInterceptErr
@@ -22,10 +20,6 @@ global intercept
 
 E0 = 5.485
 
-
-
-
->>>>>>> f299db0afd56e6fd8cf1c38c3ead097ca3084ff8
 def reducedChiSquare(x,y,fx,yerr,n):
     """
     :param x: x vector
@@ -164,6 +158,12 @@ def fitAlphaPeak(filePath, p0, left=100, right=100, res_tick=[-3,0,3]):
 def convertChannelToEnergy(channelData):
 
     E0 = 5.485
+    
+    popt_am, perr_am, func_am = fitAlphaPeak("Americium/Am_0111_1.chn", \
+                             [200, 1, 1, 100], left=100, right=50, res_tick=[-10,0,10])
+    m_am, m_am_e = popt_am[3], perr_am[3]
+    print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
+          (m_am, m_am_e, func_am))
 
     N0 = fitAlphaPeak("Calibration/Am_0111_1.chn",[500, 0.1, 0.1, 250])[0]
 
@@ -191,10 +191,7 @@ def activityFitFunc(x, lambda1, lambda2, N0, N1):
     return 'N0*lambda1*lambda2*(np.exp(-lambda1*x)-np.exp(-lambda2*x))/(lambda2-lambda1)+N1*np.exp(-lambda2*t)'
 
 def activityFit(x, y, yerr):
-    if len(x)!= len(y):
-        print("ERROR: Time and Activity data are not of the same length.")
-        return
-    popt, pcov = curve_fit(activityFitFunc, x, y, p0=[1.81e-5,1.9e-4,1.0e5,1.0e2],sigma=yerr, maxfev=50000)
+    popt, pcov = curve_fit(activityFitFunc, x, y, p0=[1.81e-5,1.9e-4,1.0e5,1.0e2], maxfev=50000)
     perr = np.sqrt(np.diag(pcov))
     plt.errorbar(x, y, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
                  label='Data', linestyle='None', markersize=3,color='k')
@@ -234,22 +231,14 @@ def calibratePulses(folderName):
     plt.ylabel('Mean Channel')
     print('Intercept: %f $\pm$ %f'%(b,b_e))
     print('Slope: %f $\pm$ %f'%(m,m_e))
-<<<<<<< HEAD
-=======
 
     ########## Define global variables which parameterize the conversion between channel number and energy ##################
-
-
-
     calibIntercept = b
     calibInterceptErr = b_e
-    N0 = fitAlphaPeak("Calibration/Am_0111_1.chn", [500, 0.1, 0.1, 250])[0][3]
-    N0Err = fitAlphaPeak("Calibration/Am_0111_1.chn", [500, 0.1, 0.1, 250])[1][3]
+    N0 = fitAlphaPeak("Americium/Am_0111_1.chn", [500, 0.1, 0.1, 250])[0][3]
+    N0Err = fitAlphaPeak("Americium/Am_0111_1.chn", [500, 0.1, 0.1, 250])[1][3]
     #slope =
 
-
-
->>>>>>> f299db0afd56e6fd8cf1c38c3ead097ca3084ff8
     plt.legend()
     plt.show()
     
@@ -321,6 +310,7 @@ def halflifeMeasurement(folderName):
     T2=np.log(2)/l2
     # We need to do a propagation of error to T1 and T2
     
+    return T1, T2
 
     
 
