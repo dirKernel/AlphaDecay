@@ -26,21 +26,22 @@ global interceptErr
 E0 = 5.485
 E0Err = 0.002
 
-def reducedChiSquare(x,y,fx,yerr,n):
+def reducedChiSquare(y,fx,yerr,m):
     """
-    :param x: x vector
     :param y: y vector
     :param fx: vector of f(x), where f is the fitting function
-    :param n: degrees of freedom = number of parameters describing the fit
+    :param m: the number of fitted parameters
     :return: Reduced chi^2 of the fit. Ideally should be 1.
     """
-    if len(x)!=len(y) or len(y)!=len(fx) or len(fx)!=len(x):
-        print("ERROR: x,y and fx should all have the same length.")
-        return
+#    if len(x)!=len(y) or len(y)!=len(fx) or len(fx)!=len(x):
+#        print("ERROR: x,y and fx should all have the same length.")
+#        return
     toReturn = 0.0
-    for n in range(len(x)):
-        toReturn += (y[n]-fx[n])**2/(yerr[n])**2
-    return toReturn / n
+    for i in range(len(y)):
+        toReturn += (y[i]-fx[i])**2/(yerr[i])**2
+    dof = len(y)-m
+    
+    return toReturn/dof, dof
 
 
 def linearFit(x, y, yerr):
@@ -64,6 +65,8 @@ def expGauss(x, A, l, s, m):
 def expGaussFit(x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     plt.figure()
     popt, pcov = curve_fit(expGauss, x, y, p0=p0, maxfev=50000)
+    npara = 4
+    rchi, dof = reducedChiSquare(y, yerr, expGauss(x, *popt), npara)
     plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
                  label='Data', linestyle='None', markersize=3,color='k')
     plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
@@ -71,21 +74,25 @@ def expGaussFit(x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     plt.xlabel('Channels')
     plt.ylabel('Counts')
     perr = np.sqrt(np.diag(pcov))
-    print('\nMean: %f $\pm$ %f'%(popt[3], perr[3]))
+    print('\nMean (Scaled): %f $\pm$ %f'%(popt[3], perr[3]))
     print('Sigma: %f $\pm$ %f'%(popt[2], perr[2]))
     print('Lambda: %f $\pm$ %f'%(popt[1], perr[1]))
     print('A: %f $\pm$ %f'%(popt[0], perr[0]))
+    print('RChi: %f'%(rchi))
+    print('DOF: %d'%(dof))
     
     # Plot residuals
-    difference = y-expGauss(x,*popt)
+    d = y-expGauss(x,*popt)
+    stu_d = d/np.std(d)
     axes = plt.gca()
     divider = make_axes_locatable(axes)
     axes2 = divider.append_axes("top", size="20%", pad=0)
     axes.figure.add_axes(axes2)
     axes2.set_xticks([])
     axes2.set_yticks(res_tick)
+    axes2.set_ylabel('Studentized\nResidual', color='k')
     axes2.axhline(y=0, color='r', linestyle='-')
-    axes2.plot(x,difference,'k+',markersize=3)
+    axes2.plot(x,stu_d,'k+',markersize=3)
 
     plt.show()
     
@@ -96,7 +103,7 @@ def expGaussFit(x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     func = func.replace('m',str(round(popt[3],1)))
     print('Fit='+func)
     
-    return popt, perr, func # return the mean channel values  
+    return popt, perr, rchi, dof, func # return the mean channel values  
 
 def gaussianFit(x, y, yerr, p0=[300, 20, 2.5], left=20, right=20, res_tick=[-3,0,3]):
     ind = np.argmax(y) #to get the peak value x-coord
@@ -116,15 +123,17 @@ def gaussianFit(x, y, yerr, p0=[300, 20, 2.5], left=20, right=20, res_tick=[-3,0
     plt.ylabel('Counts')
     
     # Plot residuals
-    difference = yy-gauss(xx,*popt)
+    d = yy-gauss(xx,*popt)
+    stu_d = d/np.std(d)
     axes = plt.gca()
     divider = make_axes_locatable(axes)
     axes2 = divider.append_axes("top", size="20%", pad=0)
     axes.figure.add_axes(axes2)
     axes2.set_xticks([])
     axes2.set_yticks(res_tick)
+    axes2.set_ylabel('Studentized\nResidual', color='k')
     axes2.axhline(y=0, color='r', linestyle='-')
-    axes2.plot(xx,difference,'k+',markersize=3)
+    axes2.plot(xx,stu_d,'k+',markersize=3)
     
     popt[1] = popt[1]+x0-left
     print('Mean: %f $\pm$ %f'%(popt[1], perr[1]))
@@ -142,19 +151,19 @@ def fitAlphaPeak(filePath, p0, left=100, right=100, res_tick=[-3,0,3]):
     """
     ch = Chn.Chn(filePath)
     y = ch.spectrum
-    print('Real time: %d'%ch.real_time)
+    #print('Real time: %d'%ch.real_time)
     x = np.arange(len(y))
     ind = np.argmax(y)
     x0 = x[ind]
     yy = y[x0-left:x0+right]
     xx = np.arange(len(yy))
     yerr = np.sqrt(yy)
-    popt, perr, func = expGaussFit(xx, yy, yerr, p0, x0, left, res_tick)
+    popt, perr, rchi, dof, func = expGaussFit(xx, yy, yerr, p0, x0, left, res_tick)
     popt[3] += x0-left
     #print('On Plot Mean: %f with error %f'%(mean, mean_e)+'\n')
-    print('Mean: %f $\pm$ %f'%(popt[3], perr[3])+'\n')
+    print('Mean (Not Scaled): %f $\pm$ %f'%(popt[3], perr[3])+'\n')
     
-    return popt, perr, func
+    return popt, perr, rchi, dof, func
 
 ################################# Transform from channel number data to energy ###########################################
 
@@ -209,7 +218,7 @@ def calibratePulses(folderName):
         y = ch.spectrum
         x = np.arange(len(y))
         yerr = np.sqrt(y)
-        popt, perr = gaussianFit(x, y, yerr, p0=[300, 20, 2.5], res_tick=[-10,0,10])
+        popt, perr = gaussianFit(x, y, yerr, p0=[300, 20, 2.5], res_tick=[-2,0,2])
         mean.append(popt[1])
         sigma.append(popt[2])
         mean_e.append(perr[1])
@@ -231,13 +240,15 @@ def calibratePulses(folderName):
     plt.ylabel('Mean Channel')
     print('Intercept: %f $\pm$ %f'%(b,b_e))
     print('Slope: %f $\pm$ %f'%(m,m_e))
+    plt.legend()
+    plt.show()
 
     ########## Define global variables which parameterize the conversion between channel number and energy ##################
     calibIntercept = b
     calibInterceptErr = b_e
     
-    popt_am, perr_am, func_am = fitAlphaPeak("Americium/Am_0111_1.chn", \
-                         [200, 1, 1, 100], left=100, right=50, res_tick=[-10,0,10])
+    popt_am, perr_am, rchi_am, dof_am, func_am = fitAlphaPeak("Americium/Am_0111_1.chn", \
+                         [200, 1, 1, 100], left=100, right=50, res_tick=[-2,0,2])
     N0, N0Err = popt_am[3], perr_am[3]
     print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
       (N0, N0Err, func_am))
@@ -247,9 +258,6 @@ def calibratePulses(folderName):
 
     intercept = E0*calibIntercept/(calibIntercept-N0)
     interceptErr = intercept*np.sqrt((E0Err/E0)**2+(N0*calibInterceptErr/(calibIntercept*(calibIntercept-N0)))**2+(N0Err/(calibIntercept-N0))**2)
-
-    plt.legend()
-    plt.show()
     
     return m, b, m_e, b_e
 
