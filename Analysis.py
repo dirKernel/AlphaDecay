@@ -1,5 +1,4 @@
 import numpy as np
-type(np.float64(0).item()) 
 import Chn
 import pylab as plb
 import matplotlib.pyplot as plt
