@@ -63,21 +63,17 @@ def expGauss(x, A, l, s, m):
     return A*l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))    
 
 def expGaussFit(x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
-    plt.figure()
+    plt.figure(figsize=(8, 6))
     popt, pcov = curve_fit(expGauss, x, y, p0=p0, maxfev=50000)
     npara = 4
     rchi, dof = reducedChiSquare(y, yerr, expGauss(x, *popt), npara)
     plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
                  label='Data', linestyle='None', markersize=3,color='k')
     plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
-    #plt.text(0.5, 0.65, r'$\cos(2 \pi t) \exp(-t)$')
     plt.legend()
     plt.xlabel('Channels')
     plt.ylabel('Counts')
     perr = np.sqrt(np.diag(pcov))
-    textstr = 'ss'
-    ax = plt.gca()
-    ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top')
     print('\nMean (Scaled): %f $\pm$ %f'%(popt[3], perr[3]))
     print('Sigma: %f $\pm$ %f'%(popt[2], perr[2]))
     print('Lambda: %f $\pm$ %f'%(popt[1], perr[1]))
@@ -99,15 +95,18 @@ def expGaussFit(x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     axes2.axhline(y=0, color='r', linestyle='-')
     axes2.errorbar(x, stu_d, yerr=stu_d_err, fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
                  label='Data', linestyle='None', markersize=3,color='k')
+    
+    func = 'A*l/2*exp(l/2*(2*x-2*mu+l*s^2))*\n(1-erf((x+l*s^2-mu)/(s*sqrt(2))))'
+    func = func.replace('A','('+str(int(popt[0]))+'$\pm$'+str(int(perr[0]))+')')
+    func = func.replace('l','('+str(round(popt[1],3))+'$\pm$'+str(round(perr[1],3))+')')
+    func = func.replace('s','('+str(round(popt[2],1))+'$\pm$'+str(round(perr[2],1))+')',3)
+    func = func.replace('mu','('+str(round(popt[3],1))+'$\pm$'+str(round(perr[3],1))+')')
+    print('Fit='+func)
+    
+    textstr = '$\chi^2$=%.2f\tDOF=%d\nFit=%s'%(rchi, dof, func)
+    plt.text(0.1, 0.9, textstr, fontsize=8, transform=plt.gcf().transFigure)
 
     plt.show()
-    
-    func = 'A*l/2*exp(l/2*(2*x-2*m+l*s^2))*(1-erf((x+l*s^2-m)/(s*sqrt(2))))'
-    func = func.replace('A',str(round(popt[0],1)))
-    func = func.replace('l',str(round(popt[1],2)))
-    func = func.replace('s',str(round(popt[2],1)),3)
-    func = func.replace('m',str(round(popt[3],1)))
-    print('Fit='+func)
     
     return popt, perr, rchi, dof, func # return the mean channel values  
 
