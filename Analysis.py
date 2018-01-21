@@ -37,6 +37,9 @@ def reducedChiSquare(y,fx,yerr,m):
 #        print("ERROR: x,y and fx should all have the same length.")
 #        return
     toReturn = 0.0
+    print(y)
+    print(fx)
+    print(yerr)
     for i in range(len(y)):
         toReturn += (y[i]-fx[i])**2/(yerr[i])**2
     dof = len(y)-m
@@ -49,12 +52,47 @@ def linearFit(x, y, yerr):
     To perform linear fit; x: x data; y: y data; yerr: error on y data;
     Output: popt: list of parameter value; perr: list of parameter err
     """
+#    x = np.asarray(x)
     fit = np.polyfit(x, y, 1, w=yerr, cov=True)
     popt = fit[0]
     pcov = fit[1]
     perr = np.sqrt(np.diag(pcov))
+    d = []
+    for i in range(len(y)):
+        d.append(y[i]-popt[0]*x[i]-popt[1])
+#    print(d)
+#    print(len(d))
+#    print(y)
+#    print(popt[0])
+#    print(x)
+#    print(popt[1])
+#    print(type(x[1]))
+#    print(type(popt[0]))
+#    popt[0] = np.float64(popt[0])
+    #print(popt[0]*x)
+#    d = y-(x*popt[0]+popt[1]*np.ones(15))
+#    np.asarray([2500.0, 5500.0, 4500.0, 3500.0, 1500.0, \
+#         6500.0, 7500.0, 7000.0, 8000.0, 1000.0, \
+#         6000.0, 4000.0, 3000.0, 2000.0, 5000.0])
+#    print(d)
     
     return popt, perr
+
+#def linear(x, m, b):
+#    return m*x+b
+#
+#def linearFit(x, y, yerr):
+#    popt, pcov = curve_fit(linear, x, y, p0=[0.1, -10], sigma=yerr)
+#    perr = np.sqrt(np.diag(pcov))
+##    print(type(x[1]))
+##    print(type(y[1]))
+#    #d = y-linear(x, *popt)
+#    d = []
+#    for i in range(len(y)):
+#        d.append(y[i]-popt[0]*x[i]+popt[1])
+#    
+#    return popt, perr, d
+    
 
 def gauss(x, a, mean, sigma):
     return a*np.exp(-(x-mean)**2/(2*sigma**2))
@@ -111,12 +149,15 @@ def expGaussFit(x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     return popt, perr, rchi, dof, func # return the mean channel values  
 
 def gaussianFit(x, y, yerr, p0=[300, 20, 2.5], left=20, right=20, res_tick=[-3,0,3]):
+    plt.figure()
     ind = np.argmax(y) #to get the peak value x-coord
     x0 = x[ind] #x0 is the peak value x-coord (channel number)
     yy = y[x0-left:x0+right]
     xx = np.arange(len(yy))
     yerr = yerr[x0-left:x0+right]
     popt, pcov = curve_fit(gauss, xx, yy, p0=p0, maxfev=50000) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
+    print(type(popt[1]))
+    print(type(yy[1]))
     npara = 3
     rchi, dof = reducedChiSquare(yy, gauss(xx, *popt), yerr, npara)
     perr = np.diag(pcov)
@@ -238,6 +279,7 @@ def calibratePulses(folderName):
         yerr = np.sqrt(y)
         popt, perr = gaussianFit(x, y, yerr, p0=[300, 20, 2.5], res_tick=[-2,0,2])
         mean.append(popt[1])
+        print(type(popt[1]))
         sigma.append(popt[2])
         mean_e.append(perr[1])
         vol.append(int(d.split('_')[0]))
@@ -247,6 +289,7 @@ def calibratePulses(folderName):
     plt.errorbar(x, y, yerr=yerr, fmt='x', elinewidth=0.5 ,capsize=3, ecolor='k', \
                  label='Data', linestyle='None', markersize=3, color='k')
     popt, perr = linearFit(x, y, yerr)
+    print(d)
     m = popt[0]
     b = popt[1]
     m_e = perr[0]
@@ -259,27 +302,18 @@ def calibratePulses(folderName):
     print('Slope: %f $\pm$ %f'%(m,m_e))
     plt.legend()
     
-#    # Plot residuals
-##    d = []
-##    print(len(x))
-##    print(len(y))
-##    for i in range(len(x)):
-##        print(y[i]-m*x[i]+b)
-##        print(y[i])
-##        print(x[i])
-##        d.append(y[i]-m*x[i]+b)
-##    print(d)
-#    d = y-m*x+b
-#    stu_d = d/np.std(d, ddof=1)
-#    axes = plt.gca()
-#    divider = make_axes_locatable(axes)
-#    axes2 = divider.append_axes("top", size="20%", pad=0)
-#    axes.figure.add_axes(axes2)
-#    axes2.set_xticks([])
-#    axes2.set_yticks([-2,0,2])
-#    axes2.set_ylabel('Studentized\nResidual', color='k')
-#    axes2.axhline(y=0, color='r', linestyle='-')
-#    axes2.plot(xx,stu_d,'k+',markersize=3)
+    x = np.asarray(x)
+    d = y-(x*popt[0]+popt[1]*np.ones(15))
+    stu_d = d/np.std(d, ddof=1)
+    axes = plt.gca()
+    divider = make_axes_locatable(axes)
+    axes2 = divider.append_axes("top", size="20%", pad=0)
+    axes.figure.add_axes(axes2)
+    axes2.set_xticks([])
+    axes2.set_yticks([-2,0,2])
+    axes2.set_ylabel('Studentized\nResidual', color='k')
+    axes2.axhline(y=0, color='r', linestyle='-')
+    axes2.plot(x,stu_d,'k+',markersize=3)
     
     plt.show()
 
