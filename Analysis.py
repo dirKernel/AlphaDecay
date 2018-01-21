@@ -282,7 +282,7 @@ def calibratePulses(folderName):
         print(type(popt[1]))
         sigma.append(popt[2])
         mean_e.append(perr[1])
-        vol.append(int(d.split('_')[0]))
+        vol.append(np.asarray(int(d.split('_')[0])))
     x = vol 
     y = mean
     yerr = mean_e
@@ -302,8 +302,10 @@ def calibratePulses(folderName):
     print('Slope: %f $\pm$ %f'%(m,m_e))
     plt.legend()
     
-    x = np.asarray(x)
-    d = y-(x*popt[0]+popt[1]*np.ones(15))
+    x = np.asarray(x) 
+    # this line of code saved my life, and it may save your life with this error
+    # 'numpy.float64' object cannot be interpreted as an integer - Alvin
+    d = y-(x*popt[0]+popt[1]*np.ones(len(x)))
     stu_d = d/np.std(d, ddof=1)
     axes = plt.gca()
     divider = make_axes_locatable(axes)
@@ -346,7 +348,7 @@ def pressureData(folderName):
     
     for d in data:
         p = d.split('_')[0]
-        pressure.append(int(p))
+        pressure.append(np.asarray(int(p)))
         
     for file in data:
         popt, perr, func = fitAlphaPeak(folderName+'/'+file, p0=[600, 0.02, 7, 100],\
