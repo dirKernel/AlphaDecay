@@ -1,4 +1,5 @@
 import numpy as np
+type(np.float64(0).item()) 
 import Chn
 import pylab as plb
 import matplotlib.pyplot as plt
@@ -113,17 +114,17 @@ def expGaussFit(x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
 def gaussianFit(x, y, yerr, p0=[300, 20, 2.5], left=20, right=20, res_tick=[-3,0,3]):
     ind = np.argmax(y) #to get the peak value x-coord
     x0 = x[ind] #x0 is the peak value x-coord (channel number)
-    print(x0)
     yy = y[x0-left:x0+right]
     xx = np.arange(len(yy))
     yerr = yerr[x0-left:x0+right]
     popt, pcov = curve_fit(gauss, xx, yy, p0=p0, maxfev=50000) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
+    npara = 3
+    rchi, dof = reducedChiSquare(yy, yerr, gauss(xx, *popt), npara)
     perr = np.diag(pcov)
     plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
                  label='Data', linestyle='None', markersize=3, color='k')
     xxx = np.linspace(min(xx),max(xx),1000)
     plt.plot(xxx+x0-left, gauss(xxx, *popt), 'r-', label='Fit')
-    #plt.text(x0-left, r'$\cos(2 \pi t) \exp(-t)$')
     plt.legend()
     plt.xlabel('Channels')
     plt.ylabel('Counts')
@@ -144,6 +145,8 @@ def gaussianFit(x, y, yerr, p0=[300, 20, 2.5], left=20, right=20, res_tick=[-3,0
     popt[1] = popt[1]+x0-left
     print('Mean: %f $\pm$ %f'%(popt[1], perr[1]))
     print('Sigma: %f'%popt[2])
+    print('RChi: %f'%(rchi))
+    print('DOF: %d'%(dof))
     plt.show()
 
     return popt, perr
@@ -240,13 +243,35 @@ def calibratePulses(folderName):
     m_e = perr[0]
     b_e = perr[1]
     xx = np.linspace(min(x), max(x))
-    plt.plot()
     plt.plot(xx, m*xx+b*np.ones(len(xx)), color='r', label='Fit')
     plt.xlabel('Voltage (mV)')
     plt.ylabel('Mean Channel')
     print('Intercept: %f $\pm$ %f'%(b,b_e))
     print('Slope: %f $\pm$ %f'%(m,m_e))
     plt.legend()
+    
+    # Plot residuals
+#    d = []
+#    print(len(x))
+#    print(len(y))
+#    for i in range(len(x)):
+#        print(y[i]-m*x[i]+b)
+#        print(y[i])
+#        print(x[i])
+#        d.append(y[i]-m*x[i]+b)
+#    print(d)
+    d = y-m*x+b
+    stu_d = d/np.std(d, ddof=1)
+    axes = plt.gca()
+    divider = make_axes_locatable(axes)
+    axes2 = divider.append_axes("top", size="20%", pad=0)
+    axes.figure.add_axes(axes2)
+    axes2.set_xticks([])
+    axes2.set_yticks([-2,0,2])
+    axes2.set_ylabel('Studentized\nResidual', color='k')
+    axes2.axhline(y=0, color='r', linestyle='-')
+    axes2.plot(xx,stu_d,'k+',markersize=3)
+    
     plt.show()
 
     ########## Define global variables which parameterize the conversion between channel number and energy ##################
