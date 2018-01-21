@@ -70,10 +70,14 @@ def expGaussFit(x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
                  label='Data', linestyle='None', markersize=3,color='k')
     plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
+    #plt.text(0.5, 0.65, r'$\cos(2 \pi t) \exp(-t)$')
     plt.legend()
     plt.xlabel('Channels')
     plt.ylabel('Counts')
     perr = np.sqrt(np.diag(pcov))
+    textstr = 'ss'
+    ax = plt.gca()
+    ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top')
     print('\nMean (Scaled): %f $\pm$ %f'%(popt[3], perr[3]))
     print('Sigma: %f $\pm$ %f'%(popt[2], perr[2]))
     print('Lambda: %f $\pm$ %f'%(popt[1], perr[1]))
@@ -83,7 +87,8 @@ def expGaussFit(x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     
     # Plot residuals
     d = y-expGauss(x,*popt)
-    stu_d = d/np.std(d)
+    stu_d = d/np.std(d, ddof=1) # studentized residual
+    stu_d_err = yerr/np.std(d, ddof=1)
     axes = plt.gca()
     divider = make_axes_locatable(axes)
     axes2 = divider.append_axes("top", size="20%", pad=0)
@@ -92,7 +97,8 @@ def expGaussFit(x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     axes2.set_yticks(res_tick)
     axes2.set_ylabel('Studentized\nResidual', color='k')
     axes2.axhline(y=0, color='r', linestyle='-')
-    axes2.plot(x,stu_d,'k+',markersize=3)
+    axes2.errorbar(x, stu_d, yerr=stu_d_err, fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
+                 label='Data', linestyle='None', markersize=3,color='k')
 
     plt.show()
     
@@ -115,16 +121,17 @@ def gaussianFit(x, y, yerr, p0=[300, 20, 2.5], left=20, right=20, res_tick=[-3,0
     popt, pcov = curve_fit(gauss, xx, yy, p0=p0, maxfev=50000) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
     perr = np.diag(pcov)
     plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
-                 label='Data', linestyle='None', markersize=5, color='k')
+                 label='Data', linestyle='None', markersize=3, color='k')
     xxx = np.linspace(min(xx),max(xx),1000)
     plt.plot(xxx+x0-left, gauss(xxx, *popt), 'r-', label='Fit')
+    #plt.text(x0-left, r'$\cos(2 \pi t) \exp(-t)$')
     plt.legend()
     plt.xlabel('Channels')
     plt.ylabel('Counts')
     
     # Plot residuals
     d = yy-gauss(xx,*popt)
-    stu_d = d/np.std(d)
+    stu_d = d/np.std(d, ddof=1)
     axes = plt.gca()
     divider = make_axes_locatable(axes)
     axes2 = divider.append_axes("top", size="20%", pad=0)
