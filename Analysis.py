@@ -66,7 +66,7 @@ def expGaussFit(x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     plt.figure(figsize=(8, 6))
     popt, pcov = curve_fit(expGauss, x, y, p0=p0, maxfev=50000)
     npara = 4
-    rchi, dof = reducedChiSquare(y, yerr, expGauss(x, *popt), npara)
+    rchi, dof = reducedChiSquare(y, expGauss(x, *popt), yerr, npara)
     plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
                  label='Data', linestyle='None', markersize=3,color='k')
     plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
@@ -118,7 +118,7 @@ def gaussianFit(x, y, yerr, p0=[300, 20, 2.5], left=20, right=20, res_tick=[-3,0
     yerr = yerr[x0-left:x0+right]
     popt, pcov = curve_fit(gauss, xx, yy, p0=p0, maxfev=50000) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
     npara = 3
-    rchi, dof = reducedChiSquare(yy, yerr, gauss(xx, *popt), npara)
+    rchi, dof = reducedChiSquare(yy, gauss(xx, *popt), yerr, npara)
     perr = np.diag(pcov)
     plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
                  label='Data', linestyle='None', markersize=3, color='k')
@@ -131,6 +131,7 @@ def gaussianFit(x, y, yerr, p0=[300, 20, 2.5], left=20, right=20, res_tick=[-3,0
     # Plot residuals
     d = yy-gauss(xx,*popt)
     stu_d = d/np.std(d, ddof=1)
+    stu_d_err = yerr/np.std(d, ddof=1)
     axes = plt.gca()
     divider = make_axes_locatable(axes)
     axes2 = divider.append_axes("top", size="20%", pad=0)
@@ -139,7 +140,16 @@ def gaussianFit(x, y, yerr, p0=[300, 20, 2.5], left=20, right=20, res_tick=[-3,0
     axes2.set_yticks(res_tick)
     axes2.set_ylabel('Studentized\nResidual', color='k')
     axes2.axhline(y=0, color='r', linestyle='-')
-    axes2.plot(xx,stu_d,'k+',markersize=3)
+    axes2.errorbar(xx, stu_d, yerr=stu_d_err, fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
+                 label='Data', linestyle='None', markersize=3,color='k')
+    
+    func = 'A*exp(-(x-mean)^2/(2*sigma^2))'
+    func = func.replace('A','('+str(int(popt[0]))+'$\pm$'+str(int(perr[0]))+')')
+    func = func.replace('mean','('+str(round(popt[1],3))+'$\pm$'+str(round(perr[1],3))+')')
+    func = func.replace('sigma','('+str(round(popt[2],1))+'$\pm$'+str(round(perr[2],1))+')',3)
+    
+    textstr = '$\chi^2$=%.2f\tDOF=%d\nFit=%s'%(rchi, dof, func)
+    plt.text(0.1, 0.9, textstr, fontsize=8, transform=plt.gcf().transFigure)
     
     popt[1] = popt[1]+x0-left
     print('Mean: %f $\pm$ %f'%(popt[1], perr[1]))
@@ -249,27 +259,27 @@ def calibratePulses(folderName):
     print('Slope: %f $\pm$ %f'%(m,m_e))
     plt.legend()
     
-    # Plot residuals
-#    d = []
-#    print(len(x))
-#    print(len(y))
-#    for i in range(len(x)):
-#        print(y[i]-m*x[i]+b)
-#        print(y[i])
-#        print(x[i])
-#        d.append(y[i]-m*x[i]+b)
-#    print(d)
-    d = y-m*x+b
-    stu_d = d/np.std(d, ddof=1)
-    axes = plt.gca()
-    divider = make_axes_locatable(axes)
-    axes2 = divider.append_axes("top", size="20%", pad=0)
-    axes.figure.add_axes(axes2)
-    axes2.set_xticks([])
-    axes2.set_yticks([-2,0,2])
-    axes2.set_ylabel('Studentized\nResidual', color='k')
-    axes2.axhline(y=0, color='r', linestyle='-')
-    axes2.plot(xx,stu_d,'k+',markersize=3)
+#    # Plot residuals
+##    d = []
+##    print(len(x))
+##    print(len(y))
+##    for i in range(len(x)):
+##        print(y[i]-m*x[i]+b)
+##        print(y[i])
+##        print(x[i])
+##        d.append(y[i]-m*x[i]+b)
+##    print(d)
+#    d = y-m*x+b
+#    stu_d = d/np.std(d, ddof=1)
+#    axes = plt.gca()
+#    divider = make_axes_locatable(axes)
+#    axes2 = divider.append_axes("top", size="20%", pad=0)
+#    axes.figure.add_axes(axes2)
+#    axes2.set_xticks([])
+#    axes2.set_yticks([-2,0,2])
+#    axes2.set_ylabel('Studentized\nResidual', color='k')
+#    axes2.axhline(y=0, color='r', linestyle='-')
+#    axes2.plot(xx,stu_d,'k+',markersize=3)
     
     plt.show()
 
