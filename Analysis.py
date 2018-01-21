@@ -17,17 +17,17 @@ import uncertainties.unumpy as unp
 
 global E0 # americium energy needed for calibration
 global E0Err
-global calibIntercept
+global calibIntercept #intercept on channel number versus voltage. beta in our notes.
 global calibInterceptErr
 global N0
 global N0Err
-global slope
+global slope #slope on energy versus channel number
 global slopeErr
-global intercept
+global intercept #intercept on energy versus channel number
 global interceptErr
 
-E0 = 5.485
-E0Err = 0.002
+E0 = 5.48556
+E0Err = 0.00012
 
 def reducedChiSquare(y,fx,yerr,m):
 #    """
@@ -250,21 +250,6 @@ def fitAlphaPeak(filePathtobeSaved, filePath, p0, left=100, right=100, res_tick=
 def convertChannelToEnergy(channelData):
 
 
-    E0 = 5.485
-    
-#    popt_am, perr_am, func_am = fitAlphaPeak("Americium/Am_0111_1.chn", \
-#                             [200, 1, 1, 100], left=100, right=50, res_tick=[-10,0,10])
-#    m_am, m_am_e = popt_am[3], perr_am[3]
-#    print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
-#          (m_am, m_am_e, func_am))
-#
-#    N0 = fitAlphaPeak("Calibration/Am_0111_1.chn",[500, 0.1, 0.1, 250])[0]
-
-    # ^ Americium reference energy and recorded channel number
-
-    #a = calibratePulses()[0]
-
-    #c = calibratePulses()[1]
 
 
     energyData = m*channelData + b*np.ones(len(channelData))
@@ -330,7 +315,8 @@ def calibratePulses(folderName):
     print('Slope: %f $\pm$ %f'%(m,m_e))
     plt.legend()
     
-    x = np.asarray(x) 
+    x = np.asarray(x)
+
     # this line of code saved my life, and it may save your life with this error
     # 'numpy.float64' object cannot be interpreted as an integer - Alvin
     d = y-(x*popt[0]+popt[1]*np.ones(len(x)))
@@ -375,12 +361,20 @@ def calibratePulses(folderName):
     print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
       (N0, N0Err, func_am))
 
+
     slope = E0/(N0-calibIntercept)
     slopeErr = slope*np.sqrt((E0Err/E0)**2+(1/(N0-calibIntercept))**2*(calibInterceptErr**2+N0Err**2))
 
     intercept = E0*calibIntercept/(calibIntercept-N0)
     interceptErr = intercept*np.sqrt((E0Err/E0)**2+(N0*calibInterceptErr/(calibIntercept*(calibIntercept-N0)))**2+(N0Err/(calibIntercept-N0))**2)
-    
+
+    print('Americium Energy: '+str(E0)+' \pm '+str(E0Err)+' MeV')
+    print('Beta intercept: ' + str(calibIntercept) + ' \pm ' + str(calibInterceptErr))
+    print('Calibration Slope, m: ' + str(slope) + ' \pm ' + str(slopeErr))
+    print('Calibration Intercept, b: ' + str(intercept) + ' \pm ' + str(interceptErr))
+
+
+
     return m, b, m_e, b_e
 
 def pressureData(folderName):
