@@ -23,8 +23,8 @@ global slopeErr
 global intercept
 global interceptErr
 
-E0 = 5.485
-E0Err = 0.002
+E0 = 5.48556
+E0Err = 0.00012
 
 def reducedChiSquare(y,fx,yerr,m):
     """
@@ -302,7 +302,8 @@ def calibratePulses(folderName):
     print('Slope: %f $\pm$ %f'%(m,m_e))
     plt.legend()
     
-    x = np.asarray(x) 
+    x = np.asarray(x)
+
     # this line of code saved my life, and it may save your life with this error
     # 'numpy.float64' object cannot be interpreted as an integer - Alvin
     d = y-(x*popt[0]+popt[1]*np.ones(len(x)))
