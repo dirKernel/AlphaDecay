@@ -4,6 +4,7 @@ import pylab as plb
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 mpl.rcParams['axes.linewidth'] = 1.3 #set the value globally
+mpl.rcParams.update({'font.size': 12})
 from scipy.optimize import curve_fit
 import scipy as sp
 from scipy.stats import chisquare
@@ -42,13 +43,14 @@ def reducedChiSquare(y,fx,yerr,m):
 #    print(fx)
 #    print(yerr)
 #    for i in range(len(y)):
-#        if yerr[i]<=-100000:
-#            continue
+#        if yerr[i]==0:
+#            toReturn += (y[i]-fx[i])**2
+#            count += 1
 #        else:
-#            toReturn += (y[i]-fx[i])**2/fx[i]
+#            toReturn += (y[i]-fx[i])**2/yerr[i]**2
 #            count += 1
 #    dof = count-m
-    
+#    
 #    return toReturn/dof, dof
 
     chisq, p = chisquare(y, f_exp=fx, ddof=m-1, axis=0)
@@ -155,15 +157,15 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     print('Fit='+func)
     
     textstr = '$\chi^2$=%.2f\tDOF=%d\nFit=%s'%(rchi, dof, func)
-    plt.text(0.1, 0.9, textstr, fontsize=8, transform=plt.gcf().transFigure)
+    plt.text(0.1, 0.9, textstr, fontsize=9, transform=plt.gcf().transFigure)
 
     plt.show()
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000)
     
     return popt, perr, rchi, dof, func # return the mean channel values  
 
-def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=20, right=20, res_tick=[-3,0,3]):
-    fig = plt.figure(figsize=[5.5,3.5])
+def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right=15, res_tick=[-3,0,3]):
+    fig = plt.figure(figsize=[6,3.5])
     ind = np.argmax(y) #to get the peak value x-coord
     x0 = x[ind] #x0 is the peak value x-coord (channel number)
     yy = y[x0-left:x0+right]
@@ -202,7 +204,7 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=20, right
     
     func = 'A*exp(-(x-mean)^2/(2*sigma^2))'
     func = func.replace('A','('+str(int(popt[0]))+'$\pm$'+str(int(perr[0]))+')')
-    func = func.replace('mean','('+str(round(popt[1],3))+'$\pm$'+str(round(perr[1],3))+')')
+    func = func.replace('mean','('+str(round(popt[1]+x0-left,3))+'$\pm$'+str(round(perr[1],3))+')')
     func = func.replace('sigma','('+str(round(popt[2],1))+'$\pm$'+str(round(perr[2],1))+')',3)
     
     textstr = '$\chi^2$=%.2f\tDOF=%d\nFit=%s'%(rchi, dof, func)
@@ -210,14 +212,14 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=20, right
     
     popt[1] = popt[1]+x0-left
     print('A: %f $\pm$ %f'%(popt[0], perr[0]))
-    print('Mean: %f $\pm$ %f'%(popt[1], perr[1]))
+    print('Mean: %f\pm%f'%(popt[1], perr[1]))
     print('Sigma: %f $\pm$ %f'%(popt[2], perr[2]))
     print('RChi: %f'%(rchi))
     print('DOF: %d'%(dof))
     #plt.show()
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000)
 
-    return popt, perr
+    return popt, perr, rchi
 
 def fitAlphaPeak(filePathtobeSaved, filePath, p0, left=100, right=100, res_tick=[-3,0,3]):
     """
@@ -273,7 +275,7 @@ def activityFit(x, y, yerr):
     return popt, perr
 
 def calibratePulses(folderName):
-    mean, sigma, mean_e, vol = [], [], [], []
+    mean, sigma, mean_e, vol, rchi = [], [], [], [], []
     data = os.listdir(folderName)
     for d in data:
         filePathtobeSaved = 'Figures/Calibration/'+d.split('.')[0]
@@ -281,19 +283,29 @@ def calibratePulses(folderName):
         y = ch.spectrum
         x = np.arange(len(y))
         yerr = np.sqrt(y)
-        popt, perr = gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], res_tick=[-3,0,3])
+        popt, perr, rchi_temp = gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], res_tick=[-3,0,3])
         mean.append(popt[1])
         print(type(popt[1]))
         sigma.append(popt[2])
-        mean_e.append(perr[1])
+        if perr[1]==0:
+            mean_e.append(1)
+        else:
+            mean_e.append(perr[1])
         vol.append(np.asarray(int(d.split('_')[0])))
-    x = vol 
+        rchi.append(rchi_temp)
+    x = vol
+    x = np.asarray(x)/1000 
     y = mean
     yerr = mean_e
+    xerr = [0.04]*len(yerr)
+    ###############For latex#################
+    for i in range(len(vol)):
+        print('$%.2f\pm%.2f$ & $%.2f\pm0.04$ & $%.2f$\\'%(y[i], yerr[i], x[i], rchi[i]))
+    #########################################
     
     filePathtobeSaved = 'Figures/Calibration/pulseLinear'
-    fig = plt.figure()
-    plt.errorbar(x, y, yerr=yerr, fmt='x', elinewidth=0.5 ,capsize=3, ecolor='k', \
+    fig = plt.figure(figsize=[8,6])
+    plt.errorbar(x, y, yerr=yerr, xerr=xerr, fmt='x', elinewidth=0.5 ,capsize=3, ecolor='k', \
                  label='Data', linestyle='None', markersize=3, color='k')
     popt, perr = linearFit(x, y, yerr)
     print(d)
@@ -309,7 +321,7 @@ def calibratePulses(folderName):
     rchi, dof = reducedChiSquare(y, m*x+b*np.ones(len(x)), yerr, npara)
     xx = np.linspace(0, max(x))
     plt.plot(xx, m*xx+b*np.ones(len(xx)), color='r', label='Fit')
-    plt.xlabel('Voltage (mV)')
+    plt.xlabel('Voltage (V)')
     plt.ylabel('Mean Channel')
     print('Intercept: %f $\pm$ %f'%(b,b_e))
     print('Slope: %f $\pm$ %f'%(m,m_e))
