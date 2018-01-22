@@ -116,8 +116,8 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     popt, pcov = curve_fit(expGauss, x, y, p0=p0, maxfev=50000)
     npara = 4
     rchi, dof = reducedChiSquare(y, expGauss(x, *popt), yerr, npara)
-    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
-                 label='Data', linestyle='None', markersize=3,color='k')
+    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=5,color='k')
     plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
     plt.legend()
     plt.xlabel('Channels')
@@ -136,7 +136,7 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     stu_d_err = yerr/np.std(d, ddof=npara-1)
     axes = plt.gca()
     divider = make_axes_locatable(axes)
-    axes2 = divider.append_axes("top", size="20%", pad=0.05)
+    axes2 = divider.append_axes("top", size="20%", pad=0.1)
     axes.figure.add_axes(axes2)
     axes2.set_xlim(axes.get_xlim())
     axes2.set_yticks(res_tick)
@@ -146,8 +146,8 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     axes2.axhline(y=0, color='r', linestyle='-')
     axes.tick_params(axis='both', direction='in')
     axes2.tick_params(axis='both', direction='in')
-    axes2.errorbar(x+x0-left, stu_d, yerr=stu_d_err, fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
-                 label='Data', linestyle='None', markersize=3,color='k')
+    axes2.errorbar(x+x0-left, stu_d, yerr=stu_d_err, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=5,color='k')
     
     func = 'A*l/2*exp(l/2*(2*x-2*mu+l*s^2))*\n(1-erf((x+l*s^2-mu)/(s*sqrt(2))))'
     func = func.replace('A','('+str(int(popt[0]))+'$\pm$'+str(int(perr[0]))+')')
@@ -160,7 +160,7 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     plt.text(0.1, 0.9, textstr, fontsize=9, transform=plt.gcf().transFigure)
 
     plt.show()
-    fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000)
+    fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
     
     return popt, perr, rchi, dof, func # return the mean channel values  
 
@@ -175,8 +175,8 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right
     npara = 3
     rchi, dof = reducedChiSquare(yy, gauss(xx, *popt), yerr, npara)
     perr = np.sqrt(np.diag(pcov))
-    plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
-                 label='Data', linestyle='None', markersize=3, color='k')
+    plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=5, color='k')
     xxx = np.linspace(min(xx),max(xx),1000)
     plt.plot(xxx+x0-left, gauss(xxx, *popt), 'r-', label='Fit')
     plt.legend()
@@ -189,7 +189,7 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right
     stu_d_err = yerr/np.std(d, ddof=npara-1)
     axes = plt.gca()
     divider = make_axes_locatable(axes)
-    axes2 = divider.append_axes("top", size="20%", pad=0.05)
+    axes2 = divider.append_axes("top", size="20%", pad=0.1)
     axes.figure.add_axes(axes2)
     axes2.set_xlim(axes.get_xlim())
     axes2.set_yticks(res_tick)
@@ -199,8 +199,8 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right
     axes2.axhline(y=0, color='r', linestyle='-')
     axes.tick_params(axis='both', direction='in')
     axes2.tick_params(axis='both', direction='in')
-    axes2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='x', elinewidth=0.5 ,capsize=1, ecolor='k', \
-                 label='Data', linestyle='None', markersize=3,color='k')
+    axes2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=5,color='k')
     
     func = 'A*exp(-(x-mean)^2/(2*sigma^2))'
     func = func.replace('A','('+str(int(popt[0]))+'$\pm$'+str(int(perr[0]))+')')
@@ -217,7 +217,7 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right
     print('RChi: %f'%(rchi))
     print('DOF: %d'%(dof))
     #plt.show()
-    fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000)
+    fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
 
     return popt, perr, rchi
 
@@ -300,13 +300,13 @@ def calibratePulses(folderName):
     xerr = [0.04]*len(yerr)
     ###############For latex#################
     for i in range(len(vol)):
-        print('$%.2f\pm%.2f$ & $%.2f\pm0.04$ & $%.2f$\\'%(y[i], yerr[i], x[i], rchi[i]))
+        print('%d & $%.2f\pm%.2f$ & $%.2f\pm0.04$ & $%.2f$ \\\\'%(i+1, y[i], yerr[i], x[i], rchi[i]))
     #########################################
     
     filePathtobeSaved = 'Figures/Calibration/pulseLinear'
     fig = plt.figure(figsize=[8,6])
-    plt.errorbar(x, y, yerr=yerr, xerr=xerr, fmt='x', elinewidth=0.5 ,capsize=3, ecolor='k', \
-                 label='Data', linestyle='None', markersize=3, color='k')
+    plt.errorbar(x, y, yerr=yerr, xerr=xerr, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=5,color='k')
     popt, perr = linearFit(x, y, yerr)
     print(d)
     m = popt[0]
@@ -348,8 +348,8 @@ def calibratePulses(folderName):
 #    axes2.set_xticklabels(empty_string_labels)
     axes2.set_ylabel('Studentized\nResidual', color='k')
     axes2.axhline(y=0, color='r', linestyle='-')
-    axes2.errorbar(x, stu_d, yerr=stu_d_err, fmt='x', elinewidth=0.5 ,capsize=3, ecolor='k', \
-                 label='Stud', linestyle='None', markersize=3,color='k')
+    axes2.errorbar(x, stu_d, yerr=stu_d_err, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=5,color='k')
     
     func = 'slope*x+b'
     func = func.replace('b','('+str(int(round(popt[1],0)))+'$\pm$'+str(int(round(perr[1],0)))+')')
@@ -360,7 +360,7 @@ def calibratePulses(folderName):
     plt.text(0.1, 0.9, textstr, fontsize=10, transform=plt.gcf().transFigure)
     
     plt.show()
-    fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000)
+    fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
 
 
     ########## Define global variables which parameterize the conversion between channel number and energy ##################
@@ -368,7 +368,7 @@ def calibratePulses(folderName):
     calibInterceptErr = b_e
     
     popt_am, perr_am, rchi_am, dof_am, func_am = fitAlphaPeak("Figures/Calibration/Am_0111_1", "Americium/Am_0111_1.chn", \
-                         [200, 1, 1, 100], left=100, right=50, res_tick=[-2,0,2])
+                         [200, 1, 1, 100], left=80, right=30, res_tick=[-2,0,2])
     N0, N0Err = popt_am[3], perr_am[3]
     print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
       (N0, N0Err, func_am))
