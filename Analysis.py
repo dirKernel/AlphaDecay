@@ -46,12 +46,28 @@ def reducedChiSquare(y,fx,yerr, npara):
     
     return toReturn/dof, dof
 
+def linFitXIntercept(x, m, h):
+    return m*x-m*h
+    
+    
+def LinearFit_xIntercept(x, y, yerr):
+    yerr = np.asarray(yerr)
+    x = np.asarray(x)
+    y = np.asarray(y)
+    popt, pcov = curve_fit(linFitXIntercept, x, y, p0=[0.01, -20], maxfev=50000)
+    perr = np.sqrt(np.diag(pcov))
+    
+    return popt, perr
+    
 def linearFit(x, y, yerr):
     """
     To perform linear fit; x: x data; y: y data; yerr: error on y data;
     Output: popt: list of parameter value; perr: list of parameter err
     """
-    fit = np.polyfit(x, y, 1, w=yerr, cov=True)
+    yerr = np.asarray(yerr)
+    x = np.asarray(x)
+    y = np.asarray(y)
+    fit = np.polyfit(x, y, 1, w=1/yerr, cov=True)
     popt = fit[0]
     pcov = fit[1]
     perr = np.sqrt(np.diag(pcov))
@@ -212,7 +228,7 @@ def convertChannelToEnergy(channelData):
 
 
 def calibratePulses(folderName):
-    mean, sigma, mean_e, vol, rchi = [], [], [], [], []
+    mean, sigma, mean_e, vol, vol_e, rchi = [], [], [], [], [], []
     data = os.listdir(folderName)
     for d in data:
         filePathtobeSaved = 'Figures/Calibration/'+d.split('.')[0]
@@ -224,31 +240,18 @@ def calibratePulses(folderName):
         mean.append(popt[1])
         print(type(popt[1]))
         sigma.append(popt[2])
-        if perr[1]==0:
-            mean_e.append(1)
-        else:
-            mean_e.append(perr[1])
-        vol.append(np.asarray(int(d.split('_')[0])))
+        mean_e.append(perr[1])
+        vol.append(int(d.split('_')[0]))
+        vol_e.append(int(d.split('_')[2]))
         rchi.append(rchi_temp)
-<<<<<<< HEAD
-    x = vol
-    x = np.asarray(x)/1000 
-    y = mean
-    yerr = mean_e
-    xerr = [0.04]*len(yerr)
-=======
-#    x = vol
-#    x = np.asarray(x)/1000 
-#    y = mean
-#    yerr = mean_e
-#    xerr = [0.04]*len(yerr)
+
     y = vol
-    y = np.asarray(y)/1000 
+    y = np.asarray(y)/1000 # convert to volts
     x = mean
     xerr = mean_e
-    yerr = [0.04]*len(xerr)
+    yerr = np.asarray(vol_e)/1000 # convert to volts
+    print(yerr)
     ###############For latex#################
->>>>>>> 8d49feffd2d0b90087d44134e61cda053ae5e0bc
     for i in range(len(vol)):
         print('%d & $%.2f\pm%.2f$ & $%.2f\pm0.04$ & $%.2f$ \\\\'%(i+1, y[i], yerr[i], x[i], rchi[i]))
     #########################################
@@ -257,29 +260,40 @@ def calibratePulses(folderName):
     fig = plt.figure(figsize=[8,6])
     plt.errorbar(x, y, yerr=yerr, xerr=xerr, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
                  label='Data', linestyle='None', markersize=5,color='k')
-    popt, perr = linearFit(x, y, yerr)
+#    popt, perr = linearFit(x, y, yerr)
+#    m = popt[0]
+#    b = popt[1] # y-intercept
+#    m_e = perr[0]
+#    b_e = perr[1] # y-intercept
+#    npara = 2
+#    x = np.asarray(x) 
+#    y = np.asarray(y)
+#    yerr = np.asarray(yerr) 
+#    rchi, dof = reducedChiSquare(y, m*x+b*np.ones(len(x)), yerr, npara)
+#    xx = np.linspace(0, max(x))
+#    plt.plot(xx, m*xx+b*np.ones(len(xx)), color='r', label='Fit')
+    popt, perr = LinearFit_xIntercept(x, y, yerr)
     m = popt[0]
-    b = popt[1]
+    h = popt[1]
     m_e = perr[0]
-    b_e = perr[1]
+    h_e = perr[1] # y-intercept
     npara = 2
-    x = np.asarray(x) 
+    x = np.asarray(x)     # this line of code saved my life, and it may save your life with this error
+                            # 'numpy.float64' object cannot be interpreted as an integer - Alvin
     y = np.asarray(y)
     yerr = np.asarray(yerr) 
-    print(yerr)
-    rchi, dof = reducedChiSquare(y, m*x+b*np.ones(len(x)), yerr, npara)
+    rchi, dof = reducedChiSquare(y, m*x-m*h*np.ones(len(x)), yerr, npara)
     xx = np.linspace(0, max(x))
-    plt.plot(xx, m*xx+b*np.ones(len(xx)), color='r', label='Fit')
+    plt.plot(xx, m*xx-m*h*np.ones(len(xx)), color='r', label='Fit')
+
     plt.xlabel('Mean Channel')
     plt.ylabel('Voltage (V)')
-    print('y-intercept: %f $\pm$ %f'%(b,b_e))
+    #print('y-intercept: %f $\pm$ %f'%(b,b_e))
+    print('x-intercept: %f $\pm$ %f'%(h,h_e))
     print('Slope: %f $\pm$ %f'%(m,m_e))
     plt.legend()
     
-    x = np.asarray(x)
-    # this line of code saved my life, and it may save your life with this error
-    # 'numpy.float64' object cannot be interpreted as an integer - Alvin
-    d = y-(x*popt[0]+popt[1]*np.ones(len(x)))
+    d = y-(x*m-m*h*np.ones(len(x)))
     stu_d = d/np.std(d, ddof=1)
     stu_d_err = yerr/np.std(d, ddof=1)
     print(stu_d_err)
@@ -308,28 +322,26 @@ def calibratePulses(folderName):
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
 
 
-    calibInterceptErr = b_e
+    calibInterceptErr = h_e
     
-    popt_am, perr_am, rchi_am, dof_am, func_am = fitAlphaPeak("Figures/Calibration/Am_0111_1", "Americium/Am_0111_1.chn", \
-                         [200, 1, 1, 100], left=70, right=30, res_tick=[-2,0,2])
-    N0, N0Err = popt_am[3], perr_am[3]
-      (N0, N0Err, func_am))
-
-
-    slope = E0/(N0-calibIntercept)
-    slopeErr = slope*np.sqrt((E0Err/E0)**2+(1/(N0-calibIntercept))**2*(calibInterceptErr**2+N0Err**2))
-
-    intercept = E0*calibIntercept/(calibIntercept-N0)
-    interceptErr = intercept*np.sqrt((E0Err/E0)**2+(N0*calibInterceptErr/(calibIntercept*(calibIntercept-N0)))**2+(N0Err/(calibIntercept-N0))**2)
-
-    print('Americium Energy: '+str(E0)+' \pm '+str(E0Err)+' MeV')
-    print('Beta intercept: ' + str(calibIntercept) + ' \pm ' + str(calibInterceptErr))
-    print('Calibration Slope, m: ' + str(slope) + ' \pm ' + str(slopeErr))
-    print('Calibration Intercept, b: ' + str(intercept) + ' \pm ' + str(interceptErr))
+#    popt_am, perr_am, rchi_am, dof_am, func_am = fitAlphaPeak("Figures/Calibration/Am_0111_1", "Americium/Am_0111_1.chn", \
+#                         [200, 1, 1, 100], left=70, right=30, res_tick=[-2,0,2])
+#    N0, N0Err = popt_am[3], perr_am[3]
+#
+#    slope = E0/(N0-calibIntercept)
+#    slopeErr = slope*np.sqrt((E0Err/E0)**2+(1/(N0-calibIntercept))**2*(calibInterceptErr**2+N0Err**2))
+#
+#    intercept = E0*calibIntercept/(calibIntercept-N0)
+#    interceptErr = intercept*np.sqrt((E0Err/E0)**2+(N0*calibInterceptErr/(calibIntercept*(calibIntercept-N0)))**2+(N0Err/(calibIntercept-N0))**2)
+#
+#    print('Americium Energy: '+str(E0)+' \pm '+str(E0Err)+' MeV')
+#    print('Beta intercept: ' + str(calibIntercept) + ' \pm ' + str(calibInterceptErr))
+#    print('Calibration Slope, m: ' + str(slope) + ' \pm ' + str(slopeErr))
+#    print('Calibration Intercept, b: ' + str(intercept) + ' \pm ' + str(interceptErr))
 
 
 
-    return m, b, m_e, b_e
+    return m, h, m_e, h_e
 
 def pressureData(folderName):
     """
@@ -458,7 +470,7 @@ def halflifeMeasurement(outFileName, folderName):
 
 ######################## Function Calling Area ##################################
     
-#m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('Calibration_4')
+m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_1')
 #m_press, m_press_e, b_press, b_press_e = pressureData('Pressure_2')
 
 #popt_am, perr_am, func_am = fitAlphaPeak("Americium/Am_0111_1.chn", \
@@ -467,7 +479,7 @@ def halflifeMeasurement(outFileName, folderName):
 #print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
 #      (m_am, m_am_e, func_am))
 
-halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
+#halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
 #spectrum = chnsum('Decay_3')
 
 
