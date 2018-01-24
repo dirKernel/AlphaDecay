@@ -49,7 +49,6 @@ def reducedChiSquare(y,fx,yerr, npara):
 def linFitXIntercept(x, m, h):
     return m*x-m*h
     
-    
 def LinearFit_xIntercept(x, y, yerr):
     yerr = np.asarray(yerr)
     x = np.asarray(x)
@@ -170,8 +169,8 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right
     
     # Plot residuals
     d = yy-gauss(xx,*popt)
-    stu_d = d/np.std(d, ddof=npara-1)
-    stu_d_err = yerr/np.std(d, ddof=npara-1)
+    stu_d = d/np.std(d, ddof=1)
+    stu_d_err = yerr/np.std(d, ddof=1)
     axes = plt.gca()
     divider = make_axes_locatable(axes)
     axes2 = divider.append_axes("top", size="20%", pad=0.1)
@@ -475,7 +474,7 @@ def halflifeMeasurement(outFileName, folderName):
 
 ######################## Function Calling Area ##################################
     
-m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
+#m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
 #m_press, m_press_e, b_press, b_press_e = pressureData('Pressure_2')
 
 popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
