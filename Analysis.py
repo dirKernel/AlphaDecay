@@ -203,9 +203,6 @@ def fitAlphaPeak(filePathtobeSaved, filePath, p0, left=100, right=100, res_tick=
 
 def convertChannelToEnergy(channelData):
 
-
-
-
     energyData = m*channelData + b*np.ones(len(channelData))
 
     return energyData
@@ -230,13 +227,12 @@ def calibratePulses(folderName):
             mean_e.append(perr[1])
         vol.append(np.asarray(int(d.split('_')[0])))
         rchi.append(rchi_temp)
-<<<<<<< HEAD
     x = vol
     x = np.asarray(x)/1000 
     y = mean
     yerr = mean_e
     xerr = [0.04]*len(yerr)
-=======
+
 #    x = vol
 #    x = np.asarray(x)/1000 
 #    y = mean
@@ -248,7 +244,6 @@ def calibratePulses(folderName):
     xerr = mean_e
     yerr = [0.04]*len(xerr)
     ###############For latex#################
->>>>>>> 8d49feffd2d0b90087d44134e61cda053ae5e0bc
     for i in range(len(vol)):
         print('%d & $%.2f\pm%.2f$ & $%.2f\pm0.04$ & $%.2f$ \\\\'%(i+1, y[i], yerr[i], x[i], rchi[i]))
     #########################################
@@ -279,6 +274,7 @@ def calibratePulses(folderName):
     x = np.asarray(x)
     # this line of code saved my life, and it may save your life with this error
     # 'numpy.float64' object cannot be interpreted as an integer - Alvin
+
     d = y-(x*popt[0]+popt[1]*np.ones(len(x)))
     stu_d = d/np.std(d, ddof=1)
     stu_d_err = yerr/np.std(d, ddof=1)
@@ -313,8 +309,10 @@ def calibratePulses(folderName):
     popt_am, perr_am, rchi_am, dof_am, func_am = fitAlphaPeak("Figures/Calibration/Am_0111_1", "Americium/Am_0111_1.chn", \
                          [200, 1, 1, 100], left=70, right=30, res_tick=[-2,0,2])
     N0, N0Err = popt_am[3], perr_am[3]
-      (N0, N0Err, func_am))
+    #(N0, N0Err, func_am))
 
+
+    ############################# define global variables #############################
 
     slope = E0/(N0-calibIntercept)
     slopeErr = slope*np.sqrt((E0Err/E0)**2+(1/(N0-calibIntercept))**2*(calibInterceptErr**2+N0Err**2))
@@ -326,8 +324,6 @@ def calibratePulses(folderName):
     print('Beta intercept: ' + str(calibIntercept) + ' \pm ' + str(calibInterceptErr))
     print('Calibration Slope, m: ' + str(slope) + ' \pm ' + str(slopeErr))
     print('Calibration Intercept, b: ' + str(intercept) + ' \pm ' + str(interceptErr))
-
-
 
     return m, b, m_e, b_e
 
@@ -345,8 +341,7 @@ def pressureData(folderName):
         pressure.append(np.asarray(int(p)))
         
     for file in data:
-        popt, perr, func = fitAlphaPeak(folderName+'/'+file, p0=[600, 0.02, 7, 100],\
-                                          right=80)
+        popt, perr, func = fitAlphaPeak(folderName+'/'+file, p0=[600, 0.02, 7, 100], right=80)
         peak_means.append(popt[3])
         peak_means_e.append(perr[3])
         fitfunc.append(func)
@@ -454,7 +449,15 @@ def halflifeMeasurement(outFileName, folderName):
     
     return T1, T2
 
-    
+def wonkyLinearFit(x,y):
+    """
+    Please fit the americium data, defining the global variable N0 before calling this function
+    :param x:
+    :param y:
+    :return: Returns the parameter m, which is the slope of the energy versus channel number relationship
+    """
+
+
 
 ######################## Function Calling Area ##################################
     
