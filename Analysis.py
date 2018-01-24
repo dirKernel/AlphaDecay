@@ -77,32 +77,55 @@ def linearFit(x, y, yerr):
 def gauss(x, a, mean, sigma):
     return a*np.exp(-(x-mean)**2/(2*sigma**2))
 
+def gaussTwo(x, *params):
+    y = np.zeros_like(x)
+    for i in range(0, len(params), 4):
+        a = params[i]
+        mean = params[i+1]
+        sigma = params[i+2]
+        y = y + a*np.exp(-(x-mean)**2/(2*sigma**2))
+    return y
+
 def expGauss(x, A, l, s, m):
     return A*l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))    
 
-def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
+def expGaussTwo(x, *params):
+    y = np.zeros_like(x)
+    for i in range(0, len(params), 4):
+        A = params[i]
+        l = params[i+1]
+        s = params[i+2]
+        m = params[i+3]
+        y = y + A*l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))
+    return y
+
+def expGaussFitTwo(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     fig = plt.figure(figsize=(8, 6))
-    popt, pcov = curve_fit(expGauss, x, y, p0=p0, maxfev=50000)
-    npara = 4
-    rchi, dof = reducedChiSquare(y, expGauss(x, *popt), yerr, npara)
+    popt, pcov = curve_fit(expGaussTwo, x, y, p0=p0, maxfev=50000)
+    npara = 8
+    rchi, dof = reducedChiSquare(y, expGaussTwo(x, *popt), yerr, npara)
     plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
                  label='Data', linestyle='None', markersize=5,color='k')
-    plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
+    plt.plot(x+x0-left, expGaussTwo(x, *popt), '-r', label='Fit')
     plt.legend()
     plt.xlabel('Channels')
     plt.ylabel('Counts')
     perr = np.sqrt(np.diag(pcov))
-    print('\nMean (Scaled): %f $\pm$ %f'%(popt[3], perr[3]))
-    print('Sigma: %f $\pm$ %f'%(popt[2], perr[2]))
-    print('Lambda: %f $\pm$ %f'%(popt[1], perr[1]))
-    print('A: %f $\pm$ %f'%(popt[0], perr[0]))
+    print('\nMean 1 (Scaled): %f $\pm$ %f'%(popt[3], perr[3]))
+    print('Sigma 1: %f $\pm$ %f'%(popt[2], perr[2]))
+    print('Lambda 1: %f $\pm$ %f'%(popt[1], perr[1]))
+    print('A 1: %f $\pm$ %f'%(popt[0], perr[0]))
+    print('Mean 2 (Scaled): %f $\pm$ %f'%(popt[7], perr[7]))
+    print('Sigma 2: %f $\pm$ %f'%(popt[6], perr[6]))
+    print('Lambda 2: %f $\pm$ %f'%(popt[5], perr[5]))
+    print('A 2: %f $\pm$ %f'%(popt[4], perr[4]))
     print('RChi: %f'%(rchi))
     print('DOF: %d'%(dof))
     
     # Plot residuals
-    d = y-expGauss(x,*popt)
-    stu_d = d/np.std(d, ddof=npara-1) # studentized residual
-    stu_d_err = yerr/np.std(d, ddof=npara-1)
+    d = y-expGaussTwo(x,*popt)
+    stu_d = d/np.std(d, ddof=1) # studentized residual
+    stu_d_err = yerr/np.std(d, ddof=1)
     axes = plt.gca()
     divider = make_axes_locatable(axes)
     axes2 = divider.append_axes("top", size="20%", pad=0.1)
@@ -118,20 +141,13 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     axes2.errorbar(x+x0-left, stu_d, yerr=stu_d_err, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
                  label='Data', linestyle='None', markersize=5,color='k')
     
-    func = 'A*l/2*exp(l/2*(2*x-2*mu+l*s^2))*\n(1-erf((x+l*s^2-mu)/(s*sqrt(2))))'
-    func = func.replace('A','('+str(int(popt[0]))+'$\pm$'+str(int(perr[0]))+')')
-    func = func.replace('l','('+str(round(popt[1],3))+'$\pm$'+str(round(perr[1],3))+')')
-    func = func.replace('s','('+str(round(popt[2],1))+'$\pm$'+str(round(perr[2],1))+')',3)
-    func = func.replace('mu','('+str(round(popt[3],1))+'$\pm$'+str(round(perr[3],1))+')')
-    print('Fit='+func)
-    
-    textstr = '$\chi^2$=%.2f\tDOF=%d\nFit=%s'%(rchi, dof, func)
+    textstr = '$\chi^2$=%.2f\tDOF=%d'%(rchi, dof)
     plt.text(0.1, 0.9, textstr, fontsize=9, transform=plt.gcf().transFigure)
 
     plt.show()
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
     
-    return popt, perr, rchi, dof, func # return the mean channel values  
+    return popt, perr, rchi, dof # return the mean channel values  
 
 def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right=15, res_tick=[-3,0,3]):
     fig = plt.figure(figsize=[6,3.5])
@@ -190,7 +206,7 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right
 
     return popt, perr, rchi
 
-def fitAlphaPeak(filePathtobeSaved, filePath, p0, left=100, right=100, res_tick=[-3,0,3]):
+def fitAlphaPeaks(filePathtobeSaved, filePath, p0, left=100, right=100, res_tick=[-3,0,3]):
     """
     This is the function to fit Alpha Peak
     filepath: full path to the file; p0: list of initial guess; left: how much away
@@ -206,11 +222,13 @@ def fitAlphaPeak(filePathtobeSaved, filePath, p0, left=100, right=100, res_tick=
     yy = y[x0-left:x0+right]
     xx = np.arange(len(yy))
     yerr = np.sqrt(yy)
-    popt, perr, rchi, dof, func = expGaussFit(filePathtobeSaved, xx, yy, yerr, p0, x0, left, res_tick)
+    popt, perr, rchi, dof = expGaussFitTwo(filePathtobeSaved, xx, yy, yerr, p0, x0, left, res_tick)
     popt[3] += x0-left
-    print('Mean (Not Scaled): %f $\pm$ %f'%(popt[3], perr[3])+'\n')
+    popt[7] += x0-left
+    print('Mean 1 (Not Scaled): %f \pm %f'%(popt[3], perr[3]))
+    print('Mean 2 (Not Scaled): %f \pm %f'%(popt[7], perr[7])+'\n')
     
-    return popt, perr, rchi, dof, func
+    return popt, perr, rchi, dof
 
 ################################# Transform from channel number data to energy ###########################################
 
@@ -236,7 +254,7 @@ def calibratePulses(folderName):
         y = ch.spectrum
         x = np.arange(len(y))
         yerr = np.sqrt(y)
-        popt, perr, rchi_temp = gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], res_tick=[-3,0,3])
+        popt, perr, rchi_temp = gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 5], res_tick=[-3,0,3])
         mean.append(popt[1])
         print(type(popt[1]))
         sigma.append(popt[2])
@@ -260,18 +278,6 @@ def calibratePulses(folderName):
     fig = plt.figure(figsize=[8,6])
     plt.errorbar(x, y, yerr=yerr, xerr=xerr, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
                  label='Data', linestyle='None', markersize=5,color='k')
-#    popt, perr = linearFit(x, y, yerr)
-#    m = popt[0]
-#    b = popt[1] # y-intercept
-#    m_e = perr[0]
-#    b_e = perr[1] # y-intercept
-#    npara = 2
-#    x = np.asarray(x) 
-#    y = np.asarray(y)
-#    yerr = np.asarray(yerr) 
-#    rchi, dof = reducedChiSquare(y, m*x+b*np.ones(len(x)), yerr, npara)
-#    xx = np.linspace(0, max(x))
-#    plt.plot(xx, m*xx+b*np.ones(len(xx)), color='r', label='Fit')
     popt, perr = LinearFit_xIntercept(x, y, yerr)
     m = popt[0]
     h = popt[1]
@@ -288,7 +294,6 @@ def calibratePulses(folderName):
 
     plt.xlabel('Mean Channel')
     plt.ylabel('Voltage (V)')
-    #print('y-intercept: %f $\pm$ %f'%(b,b_e))
     print('x-intercept: %f $\pm$ %f'%(h,h_e))
     print('Slope: %f $\pm$ %f'%(m,m_e))
     plt.legend()
@@ -296,10 +301,11 @@ def calibratePulses(folderName):
     d = y-(x*m-m*h*np.ones(len(x)))
     stu_d = d/np.std(d, ddof=1)
     stu_d_err = yerr/np.std(d, ddof=1)
+    print(np.std(d, ddof=1))
     print(stu_d_err)
     axes = plt.gca()
     divider = make_axes_locatable(axes)
-    axes2 = divider.append_axes("top", size="20%", pad=0.05)
+    axes2 = divider.append_axes("top", size="20%", pad=0.1)
     axes.figure.add_axes(axes2)
     axes2.set_xlim(axes.get_xlim())
     axes2.set_yticks([-2,0,2])
@@ -310,12 +316,11 @@ def calibratePulses(folderName):
     axes2.errorbar(x, stu_d, yerr=stu_d_err, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
                  label='Data', linestyle='None', markersize=5,color='k')
     
-    func = 'slope*x+b'
+    func = 'm=slope x-intercept=b'
     func = func.replace('b','('+str(int(round(popt[1],0)))+'$\pm$'+str(int(round(perr[1],0)))+')')
     func = func.replace('slope','('+str(round(popt[0],4))+'$\pm$'+str(round(perr[0],4))+')')
-    print('Fit='+func)
     
-    textstr = '$\chi^2$=%.2f\tDOF=%d\nFit=%s'%(rchi, dof, func)
+    textstr = '$\chi^2$=%.2f\tDOF=%d\n%s'%(rchi, dof, func)
     plt.text(0.1, 0.9, textstr, fontsize=10, transform=plt.gcf().transFigure)
     
     plt.show()
@@ -470,11 +475,11 @@ def halflifeMeasurement(outFileName, folderName):
 
 ######################## Function Calling Area ##################################
     
-m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_1')
+m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
 #m_press, m_press_e, b_press, b_press_e = pressureData('Pressure_2')
 
-#popt_am, perr_am, func_am = fitAlphaPeak("Americium/Am_0111_1.chn", \
-#                         [200, 1, 1, 100], left=100, right=50, res_tick=[-10,0,10])
+popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
+                         [785, 1, 1, 65, 1750, 1, 1.6, 70], left=70, right=30, res_tick=[-2,0,2])
 #m_am, m_am_e = popt_am[3], perr_am[3]
 #print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
 #      (m_am, m_am_e, func_am))
