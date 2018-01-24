@@ -298,7 +298,6 @@ def calibratePulses(folderName):
     y = mean
     yerr = mean_e
     xerr = [0.04]*len(yerr)
-    ###############For latex#################
     for i in range(len(vol)):
         print('$%.2f\pm%.2f$ & $%.2f\pm0.04$ & $%.2f$\\'%(y[i], yerr[i], x[i], rchi[i]))
     #########################################
@@ -363,14 +362,11 @@ def calibratePulses(folderName):
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000)
 
 
-    ########## Define global variables which parameterize the conversion between channel number and energy ##################
-    calibIntercept = b
     calibInterceptErr = b_e
     
     popt_am, perr_am, rchi_am, dof_am, func_am = fitAlphaPeak("Figures/Calibration/Am_0111_1", "Americium/Am_0111_1.chn", \
                          [200, 1, 1, 100], left=100, right=50, res_tick=[-2,0,2])
     N0, N0Err = popt_am[3], perr_am[3]
-    print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
       (N0, N0Err, func_am))
 
 
