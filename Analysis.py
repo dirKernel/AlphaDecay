@@ -76,7 +76,7 @@ def linearFit(x, y, yerr):
 def gauss(x, a, mean, sigma):
     return a*np.exp(-(x-mean)**2/(2*sigma**2))
 
-def gaussMul(x, *params, sigmaFixed=False):
+def gaussMul(x, *params, sigmaFixed=True):
     if not sigmaFixed:
         y = np.zeros_like(x)
         for i in range(0, len(params), 3):
@@ -86,8 +86,16 @@ def gaussMul(x, *params, sigmaFixed=False):
             y = y + a*np.exp(-(x-mean)**2/(2*sigma**2))
         return y
     else:
-        a1, mean1, sigma, a2, mean2 = params[0], params[1], params[2], params[4], params[5]  
-        return a1*np.exp(-(x-mean1)**2/(2*sigma**2))+a2*np.exp(-(x-mean2)**2/(2*sigma**2))
+#        a1, mean1, sigma, a2, mean2 = params[0], params[1], params[2], params[3], params[4] 
+#        a3, mean3 = params[6], params[7]
+#        return gauss(x, a1, mean1, sigma)+gauss(x, a2, mean2, sigma)+gauss(x, a3, mean3, sigma)
+        y = np.zeros_like(x)
+        for i in range(0, len(params)-1, 2):
+            a = params[i]
+            mean = params[i+1]
+            sigma = params[-1]
+            y = y + a*np.exp(-(x-mean)**2/(2*sigma**2))
+        return y
 
 def expGauss(x, A, l, s, m):
     return A*l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))    
@@ -213,7 +221,7 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right
 
     return popt, perr, rchi
 
-def gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left=15, right=15, res_tick=[-3,0,3]):
+def gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left=15, right=15, res_tick=[-3,0,3], sigmaFixed=True):
     fig = plt.figure(figsize=[8, 6])
     ind = np.argmax(y) #to get the peak value x-coord
     x0 = x[ind] #x0 is the peak value x-coord (channel number)
@@ -221,7 +229,6 @@ def gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left=15, right=15, res_tic
     xx = np.arange(len(yy))
     yerr = yerr[x0-left:x0+right]
     popt, pcov = curve_fit(gaussMul, xx, yy, p0=p0, maxfev=500000) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
-    print(popt)
     npara = len(p0)/3
     rchi, dof = reducedChiSquare(yy, gaussMul(xx, *popt), yerr, npara)
     perr = np.sqrt(np.diag(pcov))
@@ -255,24 +262,46 @@ def gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left=15, right=15, res_tic
     textstr = '$\chi^2$=%.2f\tDOF=%d'%(rchi, dof)
     plt.text(0.1, 0.9, textstr, fontsize=12, transform=plt.gcf().transFigure)
     
-    print('A 1: %f $\pm$ %f'%(popt[0], perr[0]))
-    print('Mean 1: %f\pm%f'%(popt[1], perr[1]))
-    print('Sigma 1: %f $\pm$ %f'%(popt[2], perr[2]))
-    print('A 2: %f $\pm$ %f'%(popt[3], perr[3]))
-    print('Mean 2: %f\pm%f'%(popt[4], perr[4]))
-    print('Sigma 2: %f $\pm$ %f'%(popt[5], perr[5]))
-    print('A 3: %f $\pm$ %f'%(popt[6], perr[6]))
-    print('Mean 3: %f\pm%f'%(popt[7], perr[7]))
-    print('Sigma 3: %f $\pm$ %f'%(popt[8], perr[8]))
+    print(sigmaFixed)
+    if not sigmaFixed:
+        a1, a1_e = popt[0], perr[0]
+        m1, m1_e = popt[1], perr[1]
+        s1, s1_e = popt[2], perr[2]
+        a2, a2_e = popt[3], perr[3]
+        m2, m2_e = popt[4], perr[4]
+        s2, s2_e = popt[5], perr[5]
+        a3, a3_e = popt[6], perr[6]
+        m3, m3_e = popt[7], perr[7]
+        s3, s3_e = popt[8], perr[8]
+    else:
+        a1, a1_e = popt[0], perr[0]
+        m1, m1_e = popt[1], perr[1]
+        s1, s1_e = popt[-1], perr[-1]
+        a2, a2_e = popt[2], perr[2]
+        m2, m2_e = popt[3], perr[3]
+        s2, s2_e = popt[-1], perr[-1]
+        a3, a3_e = popt[4], perr[4]
+        m3, m3_e = popt[5], perr[5]
+        s3, s3_e = popt[-1], perr[-1]
+        
+    print('A 1: %f $\pm$ %f'%(a1, a1_e))
+    print('Mean 1: %f\pm%f'%(m1, m1_e))
+    print('Sigma 1: %f $\pm$ %f'%(s1, s1_e))
+    print('A 2: %f $\pm$ %f'%(a2, a2_e))
+    print('Mean 2: %f\pm%f'%(m2, m2_e))
+    print('Sigma 2: %f $\pm$ %f'%(s2, s2_e))
+    print('A 3: %f $\pm$ %f'%(a3, a3_e))
+    print('Mean 3: %f\pm%f'%(m3, m3_e))
+    print('Sigma 3: %f $\pm$ %f'%(s3, s3_e))
     print('RChi: %f'%(rchi))
     print('DOF: %d'%(dof))
     
     ax = fig.add_subplot(111)
-    ax.annotate('Peak 1', xy=(popt[1]+x0-left, popt[0]+20), xytext=(popt[1]+x0-left, popt[0]+100),\
+    ax.annotate('Peak 1', xy=(m1+x0-left, a1+20), xytext=(m1+x0-left, a1+100),\
             arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
-    ax.annotate('Peak 2', xy=(popt[4]+x0-left, popt[3]+20), xytext=(popt[4]+x0-left, popt[3]+100),\
+    ax.annotate('Peak 2', xy=(m2+x0-left, a2+20), xytext=(m2+x0-left, a2+100),\
             arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
-    ax.annotate('Peak 3', xy=(popt[7]+x0-left-3, popt[6]), xytext=(popt[7]+x0-left-17, popt[6]),\
+    ax.annotate('Peak 3', xy=(m3+x0-left-3, a3), xytext=(m3+x0-left-17, a3),\
             arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
     plt.show()
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
@@ -303,7 +332,7 @@ def fitAlphaPeaks(filePathtobeSaved, filePath, p0, left=100, right=100, res_tick
     
     return popt, perr, rchi, dof
 
-def fitAlphaPeaksGaussMul(filePathtobeSaved, filePath, p0, left=100, right=100, res_tick=[-3,0,3]):
+def fitAlphaPeaksGaussMul(filePathtobeSaved, filePath, p0, left=100, right=100, res_tick=[-3,0,3], sigmaFixed=True):
     """
     This is the function to fit Alpha Peak
     filepath: full path to the file; p0: list of initial guess; left: how much away
@@ -316,7 +345,7 @@ def fitAlphaPeaksGaussMul(filePathtobeSaved, filePath, p0, left=100, right=100, 
     ind = np.argmax(y)
     x0 = x[ind]
     yerr = np.sqrt(y)
-    popt, perr, rchi, dof = gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left, right, res_tick)
+    popt, perr, rchi, dof = gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left, right, res_tick, sigmaFixed=sigmaFixed)
     popt[1] = popt[1]+x0-left
     popt[4] = popt[4]+x0-left
     popt[7] = popt[7]+x0-left
@@ -574,11 +603,13 @@ def halflifeMeasurement(outFileName, folderName):
 
 ######################## Function Calling Area ##################################
     
-m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
+#m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
 #m_press, m_press_e, b_press, b_press_e = pressureData('Pressure_2')
 
 #popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
 #                         [100, 0.1, 2, 50, 785, 2, 0.8, 60, 1750, 2, 1.6, 70], left=70, right=30, res_tick=[-2,0,2])
+popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
+                         [8, 50, 60, 60, 310, 70, 3], left=70, right=30, res_tick=[-5,0,5], sigmaFixed=True)
 #popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
 #                         [8, 50, 3, 60, 60, 3, 310, 70, 2], left=70, right=30, res_tick=[-5,0,5])
 
