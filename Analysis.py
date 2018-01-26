@@ -105,7 +105,7 @@ def expGaussMul(x, *params):
 def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     fig = plt.figure(figsize=(8, 6))
     popt, pcov = curve_fit(expGaussMul, x, y, p0=p0, maxfev=50000)
-    npara = 12
+    npara = len(p0)/4
     rchi, dof = reducedChiSquare(y, expGaussMul(x, *popt), yerr, npara)
     plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
                  label='Data', linestyle='None', markersize=5,color='k')
@@ -164,7 +164,7 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right
     xx = np.arange(len(yy))
     yerr = yerr[x0-left:x0+right]
     popt, pcov = curve_fit(gauss, xx, yy, p0=p0, maxfev=50000) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
-    npara = 3
+    npara = len(p0)
     rchi, dof = reducedChiSquare(yy, gauss(xx, *popt), yerr, npara)
     perr = np.sqrt(np.diag(pcov))
     plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='x', elinewidth=1.5 ,capsize=2, ecolor='b', \
@@ -199,8 +199,8 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right
     func = func.replace('mean','('+str(round(popt[1]+x0-left,3))+'$\pm$'+str(round(perr[1],3))+')')
     func = func.replace('sigma','('+str(round(popt[2],1))+'$\pm$'+str(round(perr[2],1))+')',3)
     
-    textstr = '$\chi^2$=%.2f\tDOF=%d\nFit=%s'%(rchi, dof, func)
-    plt.text(0.1, 0.9, textstr, fontsize=8, transform=plt.gcf().transFigure)
+    textstr = '$\chi^2$=%.2f\tDOF=%d\t$\mu$=%.2f$\pm$%.2f'%(rchi, dof, popt[1]+x0-left, perr[1])
+    plt.text(0.1, 0.9, textstr, fontsize=10, transform=plt.gcf().transFigure)
     
     popt[1] = popt[1]+x0-left
     print('A: %f $\pm$ %f'%(popt[0], perr[0]))
@@ -222,7 +222,7 @@ def gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left=15, right=15, res_tic
     yerr = yerr[x0-left:x0+right]
     popt, pcov = curve_fit(gaussMul, xx, yy, p0=p0, maxfev=500000) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
     print(popt)
-    npara = 6
+    npara = len(p0)/3
     rchi, dof = reducedChiSquare(yy, gaussMul(xx, *popt), yerr, npara)
     perr = np.sqrt(np.diag(pcov))
     plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='x', elinewidth=2 ,capsize=3, ecolor='b', \
@@ -253,7 +253,7 @@ def gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left=15, right=15, res_tic
                  label='Data', linestyle='None', markersize=5,color='k')
     
     textstr = '$\chi^2$=%.2f\tDOF=%d'%(rchi, dof)
-    plt.text(0.1, 0.9, textstr, fontsize=13, transform=plt.gcf().transFigure)
+    plt.text(0.1, 0.9, textstr, fontsize=12, transform=plt.gcf().transFigure)
     
     print('A 1: %f $\pm$ %f'%(popt[0], perr[0]))
     print('Mean 1: %f\pm%f'%(popt[1], perr[1]))
@@ -266,6 +266,14 @@ def gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left=15, right=15, res_tic
     print('Sigma 3: %f $\pm$ %f'%(popt[8], perr[8]))
     print('RChi: %f'%(rchi))
     print('DOF: %d'%(dof))
+    
+    ax = fig.add_subplot(111)
+    ax.annotate('Peak 1', xy=(popt[1]+x0-left, popt[0]+20), xytext=(popt[1]+x0-left, popt[0]+100),\
+            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
+    ax.annotate('Peak 2', xy=(popt[4]+x0-left, popt[3]+20), xytext=(popt[4]+x0-left, popt[3]+100),\
+            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
+    ax.annotate('Peak 3', xy=(popt[7]+x0-left-3, popt[6]), xytext=(popt[7]+x0-left-17, popt[6]),\
+            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
     plt.show()
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
 
@@ -311,8 +319,10 @@ def fitAlphaPeaksGaussMul(filePathtobeSaved, filePath, p0, left=100, right=100, 
     popt, perr, rchi, dof = gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left, right, res_tick)
     popt[1] = popt[1]+x0-left
     popt[4] = popt[4]+x0-left
+    popt[7] = popt[7]+x0-left
     print('Mean 1 (Not Scaled): %f \pm %f'%(popt[1], perr[1]))
-    print('Mean 2 (Not Scaled): %f \pm %f'%(popt[4], perr[4])+'\n')
+    print('Mean 2 (Not Scaled): %f \pm %f'%(popt[4], perr[4]))
+    print('Mean 3 (Not Scaled): %f \pm %f'%(popt[7], perr[7])+'\n')
     
     return popt, perr, rchi, dof
 
@@ -404,9 +414,9 @@ def calibratePulses(folderName):
     
     func = 'm=slope x-intercept=b'
     func = func.replace('b','('+str(int(round(popt[1],0)))+'$\pm$'+str(int(round(perr[1],0)))+')')
-    func = func.replace('slope','('+str(round(popt[0],4))+'$\pm$'+str(round(perr[0],4))+')')
+    func = func.replace('slope','('+str(round(popt[0],5))+'$\pm$'+str(round(perr[0],5))+')')
     
-    textstr = '$\chi^2$=%.2f\tDOF=%d\n%s'%(rchi, dof, func)
+    textstr = '$\chi^2$=%.2f\tDOF=%d\t%s'%(rchi, dof, func)
     plt.text(0.1, 0.9, textstr, fontsize=10, transform=plt.gcf().transFigure)
     
     plt.show()
@@ -414,23 +424,22 @@ def calibratePulses(folderName):
 
 
     calibInterceptErr = h_e
+    calibIntercept = h
     
-#    popt_am, perr_am, rchi_am, dof_am, func_am = fitAlphaPeak("Figures/Calibration/Am_0111_1", "Americium/Am_0111_1.chn", \
-#                         [200, 1, 1, 100], left=70, right=30, res_tick=[-2,0,2])
-#    N0, N0Err = popt_am[3], perr_am[3]
-#
-#    slope = E0/(N0-calibIntercept)
-#    slopeErr = slope*np.sqrt((E0Err/E0)**2+(1/(N0-calibIntercept))**2*(calibInterceptErr**2+N0Err**2))
-#
-#    intercept = E0*calibIntercept/(calibIntercept-N0)
-#    interceptErr = intercept*np.sqrt((E0Err/E0)**2+(N0*calibInterceptErr/(calibIntercept*(calibIntercept-N0)))**2+(N0Err/(calibIntercept-N0))**2)
-#
-#    print('Americium Energy: '+str(E0)+' \pm '+str(E0Err)+' MeV')
-#    print('Beta intercept: ' + str(calibIntercept) + ' \pm ' + str(calibInterceptErr))
-#    print('Calibration Slope, m: ' + str(slope) + ' \pm ' + str(slopeErr))
-#    print('Calibration Intercept, b: ' + str(intercept) + ' \pm ' + str(interceptErr))
+    popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
+                         [8, 50, 3, 60, 60, 3, 310, 70, 2], left=70, right=30, res_tick=[-5,0,5])
+    N0, N0Err = popt_am[-2], perr_am[-2]
 
+    slope = E0/(N0-calibIntercept)
+    slopeErr = slope*np.sqrt((E0Err/E0)**2+(1/(N0-calibIntercept))**2*(calibInterceptErr**2+N0Err**2))
 
+    intercept = E0*calibIntercept/(calibIntercept-N0)
+    interceptErr = intercept*np.sqrt((E0Err/E0)**2+(N0*calibInterceptErr/(calibIntercept*(calibIntercept-N0)))**2+(N0Err/(calibIntercept-N0))**2)
+
+    print('\nAmericium Energy: '+str(E0)+' \pm '+str(E0Err)+' MeV')
+    print('Beta intercept: ' + str(calibIntercept) + ' \pm ' + str(calibInterceptErr))
+    print('Calibration Slope, m: ' + str(slope) + ' \pm ' + str(slopeErr))
+    print('Calibration Intercept, b: ' + str(intercept) + ' \pm ' + str(interceptErr))
 
     return m, h, m_e, h_e
 
@@ -482,7 +491,7 @@ def activityFitFunc(x, lambda1, lambda2, N0, N1):
 
 def activityFit(filePathtobeSaved, x, y, yerr, guess):
     
-    fig = plt.figure()
+    fig = plt.figure(figsize=[8,6])
     popt, pcov = curve_fit(activityFitFunc, x, y, p0=guess, maxfev=50000)
     perr = np.sqrt(np.diag(pcov))
     npara = 4
@@ -492,7 +501,7 @@ def activityFit(filePathtobeSaved, x, y, yerr, guess):
     xx = np.linspace(min(x), max(x))
     plt.plot(xx, activityFitFunc(xx, *popt), '-r', label='Fit')
     plt.legend()
-    plt.ylabel('Activity (s^{-1})')
+    plt.ylabel('Activity ($s^{-1}$)')
     plt.xlabel('Time (s)')
     print('lambda1: %f \pm %f'%(popt[0], perr[0]))
     print('lambda2: %f \pm %f'%(popt[1], perr[1]))
@@ -513,16 +522,16 @@ def activityFit(filePathtobeSaved, x, y, yerr, guess):
     axes2.set_yticks([-2,0,2])
     axes.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True)
     axes2.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True, labelbottom=False)
-    axes2.set_ylabel('Studentized\nResidual', color='k')
+    axes2.set_ylabel('Studentized\nResiduals', color='k')
     axes2.axhline(y=0, color='r', linestyle='-')
     axes.tick_params(axis='both', direction='in')
     axes2.tick_params(axis='both', direction='in')
     axes2.errorbar(x, stu_d, yerr=stu_d_err, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
                  label='Data', linestyle='None', markersize=5,color='k')
     
-    textstr = 'l1=%.4f$\pm$%.4f l2=%.4f$\pm$%.4f\nN0=%.2f$\pm$%.2f N1=%.2f$\pm$%.2f\n$\chi^2$=%.2f\tDOF=%d'%\
-                (popt[0], perr[0],popt[1], perr[1],popt[2], perr[2],popt[3], perr[3],rchi, dof)
-    plt.text(0.1, 0.9, textstr, fontsize=10, transform=plt.gcf().transFigure)
+    textstr = 'l1=%.5f$\pm$%.5f l2=%.7f$\pm$%.7f\t$\chi^2$=%.2f\tDOF=%d'%\
+                (popt[0], perr[0],popt[1], perr[1],rchi, dof)
+    plt.text(0.1, 0.9, textstr, fontsize=12, transform=plt.gcf().transFigure)
 
     plt.show()
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
@@ -530,6 +539,7 @@ def activityFit(filePathtobeSaved, x, y, yerr, guess):
     return popt, perr, rchi, dof
 
 def halflifeMeasurement(outFileName, folderName):
+    
     filePathtobeSaved = 'Figures/HalfLifeMeasurement/'+outFileName
     files = os.listdir(folderName)
     files.sort()
@@ -551,23 +561,26 @@ def halflifeMeasurement(outFileName, folderName):
     l1, l2 = popt[0], popt[1]
     l1_e, l2_e = perr[0], perr[1]
     
-    T1=np.log(2)/l1
-    T2=np.log(2)/l2
-    # We need to do a propagation of error to T1 and T2
+    T1 = np.log(2)/l1/3600 # in hour
+    T2 = np.log(2)/l2/3600 # in hour
+    T1_e = np.log(2)/3600/l1**2*l1_e
+    T2_e = np.log(2)/3600/l2**2*l2_e
+    print('Tau1: %.1f \pm %.1f'%(T1, T1_e))
+    print('Tau1: %.1f \pm %.1f'%(T2, T2_e))
     
-    return T1, T2
+    return T1, T1_e, T2, T2_e
 
     
 
 ######################## Function Calling Area ##################################
     
-#m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
+m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
 #m_press, m_press_e, b_press, b_press_e = pressureData('Pressure_2')
 
 #popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
 #                         [100, 0.1, 2, 50, 785, 2, 0.8, 60, 1750, 2, 1.6, 70], left=70, right=30, res_tick=[-2,0,2])
-popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
-                         [8, 50, 3, 60, 60, 3, 310, 70, 2], left=70, right=30, res_tick=[-5,0,5])
+#popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
+#                         [8, 50, 3, 60, 60, 3, 310, 70, 2], left=70, right=30, res_tick=[-5,0,5])
 
 #m_am, m_am_e = popt_am[3], perr_am[3]
 #print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
