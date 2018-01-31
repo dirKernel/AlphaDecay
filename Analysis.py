@@ -28,6 +28,26 @@ global interceptErr
 E0 = 5.48556
 E0Err = 0.00012
 
+def plotStudRes(axes, d, xx , yerr, res_tick, x0=None, left=None):
+    for i in range(len(yerr)):
+        if yerr[i]==0:
+            yerr[i] = 1
+    stu_d = d/yerr
+    stu_d_err = np.ones(len(d))
+    divider = make_axes_locatable(axes)
+    axes2 = divider.append_axes("top", size="20%", pad=0.1)
+    axes.figure.add_axes(axes2)
+    axes2.set_xlim(axes.get_xlim())
+    axes2.set_yticks(res_tick)
+    axes.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True)
+    axes2.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True, labelbottom=False)
+    axes2.set_ylabel('Studentized\nResidual', color='k')
+    axes2.axhline(y=0, color='r', linestyle='-')
+    axes.tick_params(axis='both', direction='in')
+    axes2.tick_params(axis='both', direction='in')
+    axes2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=4,color='b')
+
 def reducedChiSquare(y,fx,yerr, npara):
     """
     :param y: y vector
@@ -165,9 +185,59 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     for i in range(len(yerr)):
         if yerr[i]==0:
             yerr[i] = 1
-    print(y[0:10])
+            
     # Plot residuals
     d = y-expGaussMul(x,*popt)
+    stu_d = d/yerr# studentized residual
+    stu_d_err = np.ones(len(d))
+    axes = plt.gca()
+    divider = make_axes_locatable(axes)
+    axes2 = divider.append_axes("top", size="20%", pad=0.1)
+    axes.figure.add_axes(axes2)
+    axes2.set_xlim(axes.get_xlim())
+    axes2.set_yticks(res_tick)
+    axes.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True)
+    axes2.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True, labelbottom=False)
+    axes2.set_ylabel('Studentized\nResidual', color='k')
+    axes2.axhline(y=0, color='r', linestyle='-')
+    axes.tick_params(axis='both', direction='in')
+    axes2.tick_params(axis='both', direction='in')
+    axes2.errorbar(x+x0-left, stu_d, yerr=stu_d_err, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=5,color='k')
+    
+    textstr = '$\chi^2$=%.2f\tDOF=%d'%(rchi, dof)
+    plt.text(0.1, 0.9, textstr, fontsize=9, transform=plt.gcf().transFigure)
+
+    plt.show()
+    fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
+    
+    return popt, perr, rchi, dof # return the mean channel values  
+
+def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
+    fig = plt.figure(figsize=(8, 6))
+    popt, pcov = curve_fit(expGauss, x, y, p0=p0, maxfev=50000)
+    npara = len(p0)
+    rchi, dof = reducedChiSquare(y, expGauss(x, *popt), yerr, npara)
+    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=5,color='k')
+    plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
+    plt.legend()
+    plt.xlabel('Channels')
+    plt.ylabel('Counts')
+    perr = np.sqrt(np.diag(pcov))
+    print('\nMean 1 (Scaled): %f $\pm$ %f'%(popt[3], perr[3]))
+    print('Sigma 1: %f $\pm$ %f'%(popt[2], perr[2]))
+    print('Lambda 1: %f $\pm$ %f'%(popt[1], perr[1]))
+    print('A 1: %f $\pm$ %f'%(popt[0], perr[0]))
+    print('RChi: %f'%(rchi))
+    print('DOF: %d'%(dof))
+    
+    for i in range(len(yerr)):
+        if yerr[i]==0:
+            yerr[i] = 1
+            
+    # Plot residuals
+    d = y-expGauss(x,*popt)
     stu_d = d/yerr# studentized residual
     stu_d_err = np.ones(len(d))
     axes = plt.gca()
@@ -211,25 +281,11 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right
     plt.legend()
     plt.xlabel('Channels')
     plt.ylabel('Counts')
-    
+            
     # Plot residuals
     d = yy-gauss(xx,*popt)
-    stu_d = d/np.std(d, ddof=1)
-    stu_d_err = yerr/np.std(d, ddof=1)
     axes = plt.gca()
-    divider = make_axes_locatable(axes)
-    axes2 = divider.append_axes("top", size="20%", pad=0.1)
-    axes.figure.add_axes(axes2)
-    axes2.set_xlim(axes.get_xlim())
-    axes2.set_yticks(res_tick)
-    axes.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True)
-    axes2.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True, labelbottom=False)
-    axes2.set_ylabel('Studentized\nResidual', color='k')
-    axes2.axhline(y=0, color='r', linestyle='-')
-    axes.tick_params(axis='both', direction='in')
-    axes2.tick_params(axis='both', direction='in')
-    axes2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='x', elinewidth=1.5 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5,color='k')
+    plotStudRes(axes, d, xx, yerr, res_tick=res_tick, x0=x0, left=left)
     
     func = 'A*exp(-(x-mean)^2/(2*sigma^2))'
     func = func.replace('A','('+str(int(popt[0]))+'$\pm$'+str(int(perr[0]))+')')
@@ -257,10 +313,6 @@ def gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left=15, right=15, res_tic
     yy = y[x0-left:x0+right]
     xx = np.arange(len(yy))
     yerr = yerr[x0-left:x0+right]
-    for i in range(len(yerr)):
-        if yerr[i]==0:
-            yerr[i] = 1
-    print(yerr)
     popt, pcov = curve_fit(gaussMul, xx, yy, p0=p0, maxfev=500000) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
     npara = len(p0)/3
     rchi, dof = reducedChiSquare(yy, gaussMul(xx, *popt), yerr, npara)
@@ -273,30 +325,14 @@ def gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left=15, right=15, res_tic
     plt.xlabel('Channels')
     plt.ylabel('Counts')
     
+    for i in range(len(yerr)):
+        if yerr[i]==0:
+            yerr[i] = 1
+    
     # Plot residuals
     d = yy-gaussMul(xx,*popt)
-    stu_d = d/yerr
-    stu_d_err = np.ones(len(d))
-    print(stu_d)
-    print(stu_d_err)
-    print(type(stu_d[1]))
-    print(len(stu_d))
-    print(len(stu_d_err))
-    print(xx)
     axes = plt.gca()
-    divider = make_axes_locatable(axes)
-    axes2 = divider.append_axes("top", size="20%", pad=0.1)
-    axes.figure.add_axes(axes2)
-    axes2.set_xlim(axes.get_xlim())
-    axes2.set_yticks(res_tick)
-    axes.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True)
-    axes2.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True, labelbottom=False)
-    axes2.set_ylabel('Studentized\nResidual', color='k')
-    axes2.axhline(y=0, color='r', linestyle='-')
-    axes.tick_params(axis='both', direction='in')
-    axes2.tick_params(axis='both', direction='in')
-    axes2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=4,color='b')
+    plotStudRes(axes, d, xx, yerr, res_tick=res_tick, x0=x0, left=left)
     
     textstr = '$\chi^2$=%.2f\tDOF=%d'%(rchi, dof)
     plt.text(0.1, 0.9, textstr, fontsize=12, transform=plt.gcf().transFigure)
@@ -368,6 +404,29 @@ def fitAlphaPeaks(filePathtobeSaved, filePath, p0, left=100, right=100, res_tick
     popt[7] += x0-left
     print('Mean 1 (Not Scaled): %f \pm %f'%(popt[3], perr[3]))
     print('Mean 2 (Not Scaled): %f \pm %f'%(popt[7], perr[7])+'\n')
+    
+    return popt, perr, rchi, dof
+
+def fitAlphaPeak(filePathtobeSaved, filePath, p0, left=100, right=100, res_tick=[-3,0,3], filenm=None):
+    """
+    This is the function to fit Alpha Peak
+    filepath: full path to the file; p0: list of initial guess; left: how much away
+    to the left from peak channel; right: how much away to the right from peak channel
+    res_tick: the residual plot y axis ticks
+    """
+    ch = Chn.Chn(filePath)
+    y = ch.spectrum
+    #print('Real time: %d'%ch.real_time)
+    x = np.arange(len(y))
+    ind = np.argmax(y)
+    x0 = x[ind]
+    yy = y[x0-left:x0+right]
+    xx = np.arange(len(yy))
+    yerr = np.sqrt(yy)
+    popt, perr, rchi, dof = expGaussFit(filePathtobeSaved, xx, yy, yerr, p0, x0, left, res_tick)
+    popt[3] += x0-left
+    print('File Name: %s'%filenm)
+    print('Mean 1 (Not Scaled): %f \pm %f'%(popt[3], perr[3]))
     
     return popt, perr, rchi, dof
 
@@ -510,8 +569,8 @@ def calibratePulses(folderName):
     calibInterceptErr = h_e
     calibIntercept = h
     
-    popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
-                         [8, 50, 3, 60, 60, 3, 310, 70, 2], left=70, right=30, res_tick=[-5,0,5])
+    popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
+                         [8, 20, 60, 30, 310, 40, 3], left=50, right=20, res_tick=[-2,0,2], sigmaFixed=True)
     N0, N0Err = popt_am[-2], perr_am[-2]
 
     slope = E0/(N0-calibIntercept)
@@ -532,20 +591,26 @@ def pressureData(folderName):
     This function reads all pressure varied data from the directory and fit linearly;
     folderName: string of the folder name under root directory
     """
-    peak_means, peak_means_e, fitfunc = [], [], []
+    outPath = 'Figures/Pressure'
+    
+    peak_means, peak_means_e = [], []
     data = os.listdir(folderName)
     pressure = []
     
     for d in data:
         p = d.split('_')[0]
-        pressure.append(np.asarray(int(p)))
+        pressure.append(int(p))
+    pressure = np.asarray(pressure)
+    for i in range(len(pressure)):
+        if pressure[i]==50:
+            pressure[i] = pressure[i]*0.0013332237
+    print(pressure)
         
     for file in data:
-        popt, perr, func = fitAlphaPeak(folderName+'/'+file, p0=[600, 0.02, 7, 100],\
-                                          right=80)
+        popt, perr, rchi, dof = fitAlphaPeak(outPath+'/'+file, folderName+'/'+file, p0=[600, 0.02, 7, 100],\
+                                          right=80, filenm=file)
         peak_means.append(popt[3])
         peak_means_e.append(perr[3])
-        fitfunc.append(func)
         
     plt.figure()
     x = pressure
@@ -658,13 +723,13 @@ def halflifeMeasurement(outFileName, folderName):
 
 ######################## Function Calling Area ##################################
     
-#m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
-#m_press, m_press_e, b_press, b_press_e = pressureData('Pressure_2')
+m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
+#m_press, m_press_e, b_press, b_press_e = pressureData('PressureWBias_1')
 
 #popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
 #                         [100, 2.5, 2, 20, 785, 2.5, 1.8, 30, 1750, 2, 1.6, 40], left=40, right=20, res_tick=[-2,0,2])
-popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
-                         [8, 20, 60, 30, 310, 40, 3], left=50, right=20, res_tick=[-2,0,2], sigmaFixed=True)
+#popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
+#                         [8, 20, 60, 30, 310, 40, 3], left=50, right=20, res_tick=[-2,0,2], sigmaFixed=True)
 #popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
 #                         [8, 50, 3, 60, 60, 3, 310, 70, 2], left=70, right=30, res_tick=[-2,0,2])
 
