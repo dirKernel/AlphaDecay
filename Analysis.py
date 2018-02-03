@@ -349,12 +349,14 @@ def fitAlphaPeak(filePathtobeSaved, filePath, p0, left=100, right=100, res_tick=
     return popt, perr, rchi, dof
 
 def fitAlphaPeaksGaussMul(filePathtobeSaved, filePath, p0, left=100, right=100, res_tick=[-3,0,3], sigmaFixed=True):
+
     """
     This is the function to fit Alpha Peak
     filepath: full path to the file; p0: list of initial guess; left: how much away
     to the left from peak channel; right: how much away to the right from peak channel
     res_tick: the residual plot y axis ticks
     """
+
     ch = Chn.Chn(filePath)
     y = ch.spectrum
     x = np.arange(len(y))
@@ -395,10 +397,8 @@ def fitAlphaPeaksGaussMul(filePathtobeSaved, filePath, p0, left=100, right=100, 
 
 
 def convertChannelToEnergy(channelData):
-
-
-
-
+    m = slope
+    b = intercept
     energyData = m*channelData + b*np.ones(len(channelData))
 
     return energyData
@@ -407,6 +407,7 @@ def convertChannelToEnergy(channelData):
 def calibratePulses(folderName):
     mean, sigma, mean_e, vol, vol_e, rchi = [], [], [], [], [], []
     data = os.listdir(folderName)
+
     for d in data:
         filePathtobeSaved = 'Figures/Calibration/'+d.split('.')[0]
         ch = Chn.Chn(folderName+'/'+d)
@@ -425,9 +426,11 @@ def calibratePulses(folderName):
     y = vol
     y = np.asarray(y)/1000 # convert to volts
     x = mean
+
     xerr = mean_e
     yerr = np.asarray(vol_e)/1000 # convert to volts
     print(yerr)
+
     ###############For latex#################
     for i in range(len(vol)):
         print('%d & $%.2f\pm%.2f$ & $%.2f\pm0.04$ & $%.2f$ \\\\'%(i+1, y[i], yerr[i], x[i], rchi[i]))
@@ -437,7 +440,9 @@ def calibratePulses(folderName):
     fig = plt.figure(figsize=[8,6])
     plt.errorbar(x, y, yerr=yerr, xerr=xerr, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
                  label='Data', linestyle='None', markersize=5,color='k')
+
     popt, perr = LinearFit_xIntercept(x, y, yerr)
+
     m = popt[0]
     h = popt[1]
     m_e = perr[0]
