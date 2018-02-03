@@ -553,8 +553,6 @@ def pressureData(folderName):
     plt.figure()
     x = pressure
     y = peak_means
-#    print(y)
-#    y = convertChannelToEnergy(y)
     yerr = peak_means_e
     popt, perr = linearFit(x, y, yerr)
     m = popt[0]
