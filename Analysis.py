@@ -1,18 +1,18 @@
 import numpy as np
 import Chn
-import pylab as plb
+#import pylab as plb
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 mpl.rcParams['axes.linewidth'] = 1.5 #set the value globally
-mpl.rcParams.update({'font.size': 13})
+mpl.rcParams.update({'font.size': 15})
 from scipy.optimize import curve_fit
 import scipy as sp
 import math
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
-from chnsum import chnsum
-import uncertainties as unc  
-import uncertainties.unumpy as unp  
+#from chnsum import chnsum
+#import uncertainties as unc  
+#import uncertainties.unumpy as unp  
 
 global E0 # americium energy needed for calibration
 global E0Err
@@ -28,24 +28,21 @@ global interceptErr
 E0 = 5.48556
 E0Err = 0.00012
 
-def plotStudRes(axes, d, xx , yerr, res_tick, x0=None, left=None):
-    for i in range(len(yerr)):
-        if yerr[i]==0:
-            yerr[i] = 1
+def plotStudRes(ax, d, xx , yerr, res_tick, x0=0, left=0):
     stu_d = d/yerr
     stu_d_err = np.ones(len(d))
-    divider = make_axes_locatable(axes)
-    axes2 = divider.append_axes("top", size="20%", pad=0.1)
-    axes.figure.add_axes(axes2)
-    axes2.set_xlim(axes.get_xlim())
-    axes2.set_yticks(res_tick)
-    axes.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True)
-    axes2.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True, labelbottom=False)
-    axes2.set_ylabel('Studentized\nResidual', color='k')
-    axes2.axhline(y=0, color='r', linestyle='-')
-    axes.tick_params(axis='both', direction='in')
-    axes2.tick_params(axis='both', direction='in')
-    axes2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+    divider = make_axes_locatable(ax)
+    ax2 = divider.append_axes("top", size="20%", pad=0.1)
+    ax.figure.add_axes(ax2)
+    ax2.set_xlim(ax.get_xlim())
+    ax2.set_yticks(res_tick)
+    ax.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True)
+    ax2.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True, labelbottom=False)
+    ax2.set_ylabel('Studentized\nResidual', color='k')
+    ax2.axhline(y=0, color='r', linestyle='-')
+    ax.tick_params(axis='both', direction='in')
+    ax2.tick_params(axis='both', direction='in')
+    ax2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
                  label='Data', linestyle='None', markersize=4,color='b')
 
 def reducedChiSquare(y,fx,yerr, npara):
@@ -55,6 +52,10 @@ def reducedChiSquare(y,fx,yerr, npara):
     :param m: the number of fitted parameters
     :return: Reduced chi^2 of the fit. Ideally should be 1, dof the degree of freedom.
     """
+    for i in range(len(yerr)):
+        if yerr[i]==0:
+            yerr[i] = 1
+    
     toReturn, count = 0.0, 0
     for i in range(len(y)):
         if yerr[i]==0:
@@ -95,33 +96,6 @@ def linearFit(x, y, yerr):
 
 def gauss(x, a, mean, sigma):
     return a*np.exp(-(x-mean)**2/(2*sigma**2))
-
-################ For Vincent to have fun with ################################# 
-#def gaussMul(x, *params, sigmaFixed=True, overallConst=True):
-#    y = np.zeros_like(x)
-#    if not sigmaFixed:
-#        for i in range(0, len(params), 3):
-#            a = params[i]
-#            mean = params[i+1]
-#            sigma = params[i+2]
-#            y = y + a*np.exp(-(x-mean)**2/(2*sigma**2))
-#    else:
-#        if not overallConst:
-#            for i in range(0, len(params)-1, 2):
-#                a = params[i]
-#                mean = params[i+1]
-#                sigma = params[-1]
-#                y = y + a*np.exp(-(x-mean)**2/(2*sigma**2))
-#        else:
-#            for i in range(0, len(params)-2, 2):
-#                a = params[i]
-#                mean = params[i+1]
-#                sigma = params[-2]
-#                y = y + a*np.exp(-(x-mean)**2/(2*sigma**2))
-#            y = y + params[-1]
-#            
-#    return y
-###############################################################################
 
 def gaussMul(x, *params, sigmaFixed=True):
     if not sigmaFixed:
@@ -181,32 +155,11 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     print('A 3: %f $\pm$ %f'%(popt[8], perr[8]))
     print('RChi: %f'%(rchi))
     print('DOF: %d'%(dof))
-    
-    for i in range(len(yerr)):
-        if yerr[i]==0:
-            yerr[i] = 1
             
     # Plot residuals
     d = y-expGaussMul(x,*popt)
-    stu_d = d/yerr# studentized residual
-    stu_d_err = np.ones(len(d))
     axes = plt.gca()
-    divider = make_axes_locatable(axes)
-    axes2 = divider.append_axes("top", size="20%", pad=0.1)
-    axes.figure.add_axes(axes2)
-    axes2.set_xlim(axes.get_xlim())
-    axes2.set_yticks(res_tick)
-    axes.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True)
-    axes2.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True, labelbottom=False)
-    axes2.set_ylabel('Studentized\nResidual', color='k')
-    axes2.axhline(y=0, color='r', linestyle='-')
-    axes.tick_params(axis='both', direction='in')
-    axes2.tick_params(axis='both', direction='in')
-    axes2.errorbar(x+x0-left, stu_d, yerr=stu_d_err, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5,color='k')
-    
-    textstr = '$\chi^2$=%.2f\tDOF=%d'%(rchi, dof)
-    plt.text(0.1, 0.9, textstr, fontsize=9, transform=plt.gcf().transFigure)
+    plotStudRes(axes, d, x, yerr, res_tick=res_tick, x0=x0, left=left)
 
     plt.show()
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
@@ -221,7 +174,6 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
                  label='Data', linestyle='None', markersize=5,color='k')
     plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
-    plt.legend()
     plt.xlabel('Channels')
     plt.ylabel('Counts')
     perr = np.sqrt(np.diag(pcov))
@@ -231,32 +183,11 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     print('A 1: %f $\pm$ %f'%(popt[0], perr[0]))
     print('RChi: %f'%(rchi))
     print('DOF: %d'%(dof))
-    
-    for i in range(len(yerr)):
-        if yerr[i]==0:
-            yerr[i] = 1
             
     # Plot residuals
     d = y-expGauss(x,*popt)
-    stu_d = d/yerr# studentized residual
-    stu_d_err = np.ones(len(d))
     axes = plt.gca()
-    divider = make_axes_locatable(axes)
-    axes2 = divider.append_axes("top", size="20%", pad=0.1)
-    axes.figure.add_axes(axes2)
-    axes2.set_xlim(axes.get_xlim())
-    axes2.set_yticks(res_tick)
-    axes.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True)
-    axes2.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True, labelbottom=False)
-    axes2.set_ylabel('Studentized\nResidual', color='k')
-    axes2.axhline(y=0, color='r', linestyle='-')
-    axes.tick_params(axis='both', direction='in')
-    axes2.tick_params(axis='both', direction='in')
-    axes2.errorbar(x+x0-left, stu_d, yerr=stu_d_err, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5,color='k')
-    
-    textstr = '$\chi^2$=%.2f\tDOF=%d'%(rchi, dof)
-    plt.text(0.1, 0.9, textstr, fontsize=9, transform=plt.gcf().transFigure)
+    plotStudRes(axes, d, x, yerr, res_tick=res_tick, x0=x0, left=left)
 
     plt.show()
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
@@ -287,14 +218,6 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right
     axes = plt.gca()
     plotStudRes(axes, d, xx, yerr, res_tick=res_tick, x0=x0, left=left)
     
-    func = 'A*exp(-(x-mean)^2/(2*sigma^2))'
-    func = func.replace('A','('+str(int(popt[0]))+'$\pm$'+str(int(perr[0]))+')')
-    func = func.replace('mean','('+str(round(popt[1]+x0-left,3))+'$\pm$'+str(round(perr[1],3))+')')
-    func = func.replace('sigma','('+str(round(popt[2],1))+'$\pm$'+str(round(perr[2],1))+')',3)
-    
-    textstr = '$\chi^2$=%.2f\tDOF=%d\t$\mu$=%.2f$\pm$%.2f'%(rchi, dof, popt[1]+x0-left, perr[1])
-    plt.text(0.1, 0.9, textstr, fontsize=10, transform=plt.gcf().transFigure)
-    
     popt[1] = popt[1]+x0-left
     print('A: %f $\pm$ %f'%(popt[0], perr[0]))
     print('Mean: %f\pm%f'%(popt[1], perr[1]))
@@ -313,6 +236,9 @@ def gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left=15, right=15, res_tic
     yy = y[x0-left:x0+right]
     xx = np.arange(len(yy))
     yerr = yerr[x0-left:x0+right]
+    for i in range(len(yerr)):
+        if yerr[i]==0:
+            yerr[i] = 1
     popt, pcov = curve_fit(gaussMul, xx, yy, p0=p0, maxfev=500000) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
     npara = len(p0)/3
     rchi, dof = reducedChiSquare(yy, gaussMul(xx, *popt), yerr, npara)
@@ -325,19 +251,11 @@ def gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left=15, right=15, res_tic
     plt.xlabel('Channels')
     plt.ylabel('Counts')
     
-    for i in range(len(yerr)):
-        if yerr[i]==0:
-            yerr[i] = 1
-    
     # Plot residuals
     d = yy-gaussMul(xx,*popt)
     axes = plt.gca()
     plotStudRes(axes, d, xx, yerr, res_tick=res_tick, x0=x0, left=left)
     
-    textstr = '$\chi^2$=%.2f\tDOF=%d'%(rchi, dof)
-    plt.text(0.1, 0.9, textstr, fontsize=12, transform=plt.gcf().transFigure)
-    
-    print(sigmaFixed)
     if not sigmaFixed:
         a1, a1_e = popt[0], perr[0]
         m1, m1_e = popt[1], perr[1]
@@ -445,25 +363,25 @@ def fitAlphaPeaksGaussMul(filePathtobeSaved, filePath, p0, left=100, right=100, 
     yerr = np.sqrt(y)
     popt, perr, rchi, dof = gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left, right, res_tick, sigmaFixed=sigmaFixed)
     if not sigmaFixed:
-        a1, a1_e = popt[0], perr[0]
+        #a1, a1_e = popt[0], perr[0]
         m1, m1_e = popt[1], perr[1]
-        s1, s1_e = popt[2], perr[2]
-        a2, a2_e = popt[3], perr[3]
+        #s1, s1_e = popt[2], perr[2]
+        #a2, a2_e = popt[3], perr[3]
         m2, m2_e = popt[4], perr[4]
-        s2, s2_e = popt[5], perr[5]
-        a3, a3_e = popt[6], perr[6]
+        #s2, s2_e = popt[5], perr[5]
+        #a3, a3_e = popt[6], perr[6]
         m3, m3_e = popt[7], perr[7]
-        s3, s3_e = popt[8], perr[8]
+        #s3, s3_e = popt[8], perr[8]
     else:
-        a1, a1_e = popt[0], perr[0]
+        #a1, a1_e = popt[0], perr[0]
         m1, m1_e = popt[1], perr[1]
-        s1, s1_e = popt[-1], perr[-1]
-        a2, a2_e = popt[2], perr[2]
+        #s1, s1_e = popt[-1], perr[-1]
+        #a2, a2_e = popt[2], perr[2]
         m2, m2_e = popt[3], perr[3]
-        s2, s2_e = popt[-1], perr[-1]
-        a3, a3_e = popt[4], perr[4]
+        #s2, s2_e = popt[-1], perr[-1]
+        #a3, a3_e = popt[4], perr[4]
         m3, m3_e = popt[5], perr[5]
-        s3, s3_e = popt[-1], perr[-1]
+        #s3, s3_e = popt[-1], perr[-1]
         
     print('Mean 1 (Not Scaled): %f \pm %f'%(m1+x0-left, m1_e))
     print('Mean 2 (Not Scaled): %f \pm %f'%(m2+x0-left, m2_e))
@@ -540,20 +458,8 @@ def calibratePulses(folderName):
     plt.legend()
     
     d = y-(x*m-m*h*np.ones(len(x)))
-    stu_d = d/yerr
-    stu_d_err = np.ones(len(x))
     axes = plt.gca()
-    divider = make_axes_locatable(axes)
-    axes2 = divider.append_axes("top", size="20%", pad=0.1)
-    axes.figure.add_axes(axes2)
-    axes2.set_xlim(axes.get_xlim())
-    axes2.set_yticks([-1,0,1])
-    axes.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True)
-    axes2.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True, labelbottom=False)
-    axes2.set_ylabel('Studentized\nResidual', color='k')
-    axes2.axhline(y=0, color='r', linestyle='-')
-    axes2.errorbar(x, stu_d, yerr=stu_d_err, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5,color='k')
+    plotStudRes(axes, d, x, yerr, res_tick=[-1,0,1])
     
     func = 'm=slope x-intercept=b'
     func = func.replace('b','('+str(int(round(popt[1],0)))+'$\pm$'+str(int(round(perr[1],0)))+')')
@@ -661,26 +567,9 @@ def activityFit(filePathtobeSaved, x, y, yerr, guess):
     
     # Plot residuals
     d = y-activityFitFunc(x,*popt)
-    stu_d = d/np.std(d, ddof=1) # studentized residual
-    stu_d_err = yerr/np.std(d, ddof=1)
     axes = plt.gca()
-    divider = make_axes_locatable(axes)
-    axes2 = divider.append_axes("top", size="20%", pad=0.1)
-    axes.figure.add_axes(axes2)
-    axes2.set_xlim(axes.get_xlim())
-    axes2.set_yticks([-2,0,2])
-    axes.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True)
-    axes2.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True, labelbottom=False)
-    axes2.set_ylabel('Studentized\nResiduals', color='k')
-    axes2.axhline(y=0, color='r', linestyle='-')
-    axes.tick_params(axis='both', direction='in')
-    axes2.tick_params(axis='both', direction='in')
-    axes2.errorbar(x, stu_d, yerr=stu_d_err, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5,color='k')
+    plotStudRes(axes, d, x, yerr, res_tick=[-2,0,2])
     
-    textstr = 'l1=%.5f$\pm$%.5f l2=%.7f$\pm$%.7f\t$\chi^2$=%.2f\tDOF=%d'%\
-                (popt[0], perr[0],popt[1], perr[1],rchi, dof)
-    plt.text(0.1, 0.9, textstr, fontsize=12, transform=plt.gcf().transFigure)
 
     plt.show()
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
@@ -723,21 +612,17 @@ def halflifeMeasurement(outFileName, folderName):
 
 ######################## Function Calling Area ##################################
     
-m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
-#m_press, m_press_e, b_press, b_press_e = pressureData('PressureWBias_1')
+#m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
+m_press, m_press_e, b_press, b_press_e = pressureData('PressureWBias_1')
 
 #popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
 #                         [100, 2.5, 2, 20, 785, 2.5, 1.8, 30, 1750, 2, 1.6, 40], left=40, right=20, res_tick=[-2,0,2])
-#popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
-#                         [8, 20, 60, 30, 310, 40, 3], left=50, right=20, res_tick=[-2,0,2], sigmaFixed=True)
+popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
+                         [8, 20, 60, 30, 310, 40, 3], left=50, right=20, res_tick=[-2,0,2], sigmaFixed=True)
 #popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
 #                         [8, 50, 3, 60, 60, 3, 310, 70, 2], left=70, right=30, res_tick=[-2,0,2])
 
-#m_am, m_am_e = popt_am[3], perr_am[3]
-#print('Amerisium Calibration: Mean channel = %f $\pm$ %f\nFit function = %s'%\
-#      (m_am, m_am_e, func_am))
-
-#halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
+halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
 #spectrum = chnsum('Decay_3')
 
 
