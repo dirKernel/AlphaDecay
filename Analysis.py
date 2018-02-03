@@ -805,24 +805,37 @@ def integrateExpGauss(params):
     # params is the vector (A,lambda, sigma, mu) describing the expgaussian integrand
     return quad(expGauss, 0, np.inf, args=(params[0],params[1],params[2],params[3]))[0]
 
-
 def diffExpGaussSigma(x,params):
     #returns the derivative of ExpGaussFunction with respect to sigma as function of x
-    return None
+    A = params[0]
+    l = params[1]
+    s = params[2]
+    m = params[3]
+    return A*l/(2*s**2)*np.exp(-(x-m)**2/(2*s**2))*(np.sqrt(2/np.pi)*(x-m-l*(s**2))+(l**2)*(s**3)*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s))))
+
 def integrateDiffExpGaussSigma(params):
     return quad(diffExpGaussSigma, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
 
+
 def diffExpGaussLambda(x, params):
     # returns the derivative of ExpGaussFunction with respect to lambda as function of x
-    return None
+    A = params[0]
+    l = params[1]
+    s = params[2]
+    m = params[3]
+
+    return A/2*np.exp(l/2*(2*x-2*m+l*s*s))*((1+l*(x-m+l*s**2))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))-np.sqrt(2/np.pi)*l*s*(np.exp(-(x-m+l*s**2)**2/(2*s**2))))
 
 def integrateDiffExpGaussLambda(params):
     return quad(diffExpGaussLambda, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
 
+
 def diffExpGaussA(x,params):
     # returns the derivative of ExpGaussFunction with respect to lambda as function of x
-
-    return None
+    l = params[1]
+    s = params[2]
+    m = params[3]
+    return l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))
 
 def integrateDiffExpGaussA(params):
     return quad(diffExpGaussA, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
@@ -830,7 +843,54 @@ def integrateDiffExpGaussA(params):
 
 def diffExpGaussMu(x,params):
     # returns the derivative of ExpGaussFunction with respect to mu as function of x
-    return None
+    A = params[0]
+    l = params[1]
+    s = params[2]
+    m = params[3]
+
+    return A*l/(2*np.sqrt(np.pi)*s)*np.exp(l/2*(2*x-2*m+l*s*s))*(np.sqrt(2)*(np.exp(-(x-m+l*s**2)**2/(2*s**2)))-np.sqrt(np.pi)*l*s*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s))))
 
 def integrateDiffExpGaussMu(params):
     return quad(diffExpGaussMu, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
+
+def calculateBranchRatio(Params,ParamErrs):
+    # Params is a lists of lists. Each embedded list is a set of parameters for a single transition fit, [A,l,s,m]
+    # ParamErrs is similarly a list of lists of the associated errors on the fits of each parameters
+    # Assume the parameter vectors are orderred in the order of increasing energy
+    b=[integrateExpGauss(Params[i]) for i in range(1,5)]
+    totalArea = sum(b)
+    totalDiffA= sum([integrateDiffExpGaussA(Params[i]) for i in range(1,5)])
+    totalDiffLambda = sum([integrateDiffExpGaussLambda(Params[i]) for i in range(1,5)])
+    totalDiffSigma = sum([integrateDiffExpGaussSigma(Params[i]) for i in range(1,5)])
+    totalDiffMu = sum([integrateDiffExpGaussMu(Params[i]) for i in range(1,5)])
+    b =np.array(b)
+    b = np.multiply((1 / totalArea), b)
+    print(b)
+    bErr=[] #array of error on branching ratios
+    for i in range(1,5):
+        # propagate the error
+        err = 0.0
+        for n in range(1,5): #all fitted function parameter errors propogate so loop through all of them
+            paramErrs = ParamErrs[n]
+            if n==i:
+                derivsA = [(integrateDiffExpGaussA(Params[i])*totalArea-totalDiffA*integrateExpGauss(Params[i]))/(totalArea**2),
+                           (integrateDiffExpGaussLambda(Params[i])*totalArea-totalDiffLambda*integrateExpGauss(Params[i]))/(totalArea**2),
+                          (integrateDiffExpGaussSigma(Params[i])*totalArea-totalDiffSigma*integrateExpGauss(Params[i]))/(totalArea**2),
+                (integrateDiffExpGaussMu(Params[i])*totalArea-totalDiffMu*integrateExpGauss(Params[i]))/(totalArea**2)]
+                #derivsA and derivsB represent the different derivtives that distinquish whether or not the index of the branching function corresponds to the index of the
+                # propogated function
+                err = err + sum([(derivsA[j]*paramErrs[j])**2 for j in range(1,5)])
+            else:
+                derivsB = [(integrateExpGauss(Params[i])*integrateDiffExpGaussA(Params[n]))/(totalArea**2),
+                           (integrateExpGauss(Params[i])*integrateDiffExpGaussLambda(Params[n]))/(totalArea**2),
+                           (integrateExpGauss(Params[i])*integrateDiffExpGaussSigma(Params[n]))/(totalArea**2),
+                           (integrateExpGauss(Params[i]) * integrateDiffExpGaussMu(Params[n])) / (totalArea ** 2)]
+                err = err + sum([(derivsB[j]*paramErrs[j])**2 for j in range(1,5)])
+            bErr.append(err)
+
+    b = np.array(b)
+    bErr = np.array(bErr)
+
+    print("Branching ratios: "+str(b))
+    print("Errors on ratios: "+str(bErr))
+
