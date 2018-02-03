@@ -15,6 +15,8 @@ def chnsum(folderName):
         else:
             spectrum = spectrum + current.spectrum
     
+    
+    matplot.figure(figsize=(8,6))
     matplot.plot(spectrum[1000:-1])
     matplot.xlabel("Channel")
     matplot.ylabel("Count")

@@ -25,8 +25,13 @@ global slopeErr
 global intercept #intercept on energy versus channel number
 global interceptErr
 
-E0 = 5.48556
-E0Err = 0.00012
+slope = 0.0856686031691
+slopeErr = 0.00117547830093
+intercept = 1.23725897027
+interceptErr = 0.0582584392455
+
+#E0 = 5.48556
+#E0Err = 0.00012
 
 def plotStudRes(ax, d, xx , yerr, res_tick, x0=0, left=0):
     stu_d = d/yerr
@@ -174,7 +179,7 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
                  label='Data', linestyle='None', markersize=5,color='k')
     plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
-    plt.xlabel('Channels')
+    plt.xlabel('Energy (MeV)')
     plt.ylabel('Counts')
     perr = np.sqrt(np.diag(pcov))
     print('\nMean 1 (Scaled): %f $\pm$ %f'%(popt[3], perr[3]))
@@ -340,6 +345,15 @@ def fitAlphaPeak(filePathtobeSaved, filePath, p0, left=100, right=100, res_tick=
     x0 = x[ind]
     yy = y[x0-left:x0+right]
     xx = np.arange(len(yy))
+    
+    xx = convertChannelToEnergy(xx)
+    x0 = convertChannelToEnergy(x0)
+    left = convertChannelToEnergy(left)
+    print(xx)
+    print(x0)
+    print(left)
+#    p0[3] = convertChannelToEnergy(p0[3])
+    
     yerr = np.sqrt(yy)
     popt, perr, rchi, dof = expGaussFit(filePathtobeSaved, xx, yy, yerr, p0, x0, left, res_tick)
     popt[3] += x0-left
@@ -399,7 +413,7 @@ def fitAlphaPeaksGaussMul(filePathtobeSaved, filePath, p0, left=100, right=100, 
 def convertChannelToEnergy(channelData):
     m = slope
     b = intercept
-    energyData = m*channelData + b*np.ones(len(channelData))
+    energyData = m*channelData + b
 
     return energyData
 
@@ -476,6 +490,19 @@ def calibratePulses(folderName):
     plt.show()
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
 
+    global E0 # americium energy needed for calibration
+    global E0Err
+    global calibIntercept #intercept on channel number versus voltage. beta in our notes.
+    global calibInterceptErr
+    global N0
+    global N0Err
+    global slope #slope on energy versus channel number
+    global slopeErr
+    global intercept #intercept on energy versus channel number
+    global interceptErr
+    
+    E0 = 5.48556
+    E0Err = 0.00012
 
     calibInterceptErr = h_e
     calibIntercept = h
@@ -518,7 +545,7 @@ def pressureData(folderName):
     print(pressure)
         
     for file in data:
-        popt, perr, rchi, dof = fitAlphaPeak(outPath+'/'+file, folderName+'/'+file, p0=[600, 0.02, 7, 100],\
+        popt, perr, rchi, dof = fitAlphaPeak(outPath+'/'+file, folderName+'/'+file, p0=[60, 1, 0.7, 10],\
                                           right=80, filenm=file)
         peak_means.append(popt[3])
         peak_means_e.append(perr[3])
@@ -526,6 +553,8 @@ def pressureData(folderName):
     plt.figure()
     x = pressure
     y = peak_means
+#    print(y)
+#    y = convertChannelToEnergy(y)
     yerr = peak_means_e
     popt, perr = linearFit(x, y, yerr)
     m = popt[0]
@@ -538,7 +567,7 @@ def pressureData(folderName):
     print('Slope: %f $\pm$ %f'%(m,m_e))
     plt.plot(x, y, 'kx', label='Data')
     plt.xlabel('Pressure (mBar)')
-    plt.ylabel('Mean Channel')
+    plt.ylabel('Energy (MeV')
     plt.legend()
     plt.show()
     
@@ -622,12 +651,12 @@ m_press, m_press_e, b_press, b_press_e = pressureData('PressureWBias_1')
 
 #popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
 #                         [100, 2.5, 2, 20, 785, 2.5, 1.8, 30, 1750, 2, 1.6, 40], left=40, right=20, res_tick=[-2,0,2])
-popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
-                         [8, 20, 60, 30, 310, 40, 3], left=50, right=20, res_tick=[-2,0,2], sigmaFixed=True)
+#popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
+#                         [8, 20, 60, 30, 310, 40, 3], left=50, right=20, res_tick=[-2,0,2], sigmaFixed=True)
 #popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
 #                         [8, 50, 3, 60, 60, 3, 310, 70, 2], left=70, right=30, res_tick=[-2,0,2])
 
-halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
+#halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
 #spectrum = chnsum('Decay_3')
 
 
