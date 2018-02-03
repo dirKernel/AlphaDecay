@@ -26,10 +26,10 @@ global slopeErr
 global intercept #intercept on energy versus channel number
 global interceptErr
 
-slope = 0.0856686031691
-slopeErr = 0.00117547830093
-intercept = 1.23725897027
-interceptErr = 0.0582584392455
+slope = 0.00457880799792
+slopeErr = 3.35945387177e-06
+intercept = 0.0661289090633
+interceptErr = 0.00397196078318
 
 #E0 = 5.48556
 #E0Err = 0.00012
@@ -140,8 +140,8 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     popt, pcov = curve_fit(expGaussMul, x, y, p0=p0, maxfev=50000)
     npara = len(p0)/4
     rchi, dof = reducedChiSquare(y, expGaussMul(x, *popt), yerr, npara)
-    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5,color='k')
+    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=4,color='b')
     plt.plot(x+x0-left, expGaussMul(x, *popt), '-r', label='Fit')
     plt.legend()
     plt.xlabel('Channels')
@@ -177,8 +177,8 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     popt, pcov = curve_fit(expGauss, x, y, p0=p0, maxfev=50000)
     npara = len(p0)
     rchi, dof = reducedChiSquare(y, expGauss(x, *popt), yerr, npara)
-    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5,color='k')
+    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=4,color='b')
     plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
     plt.xlabel('Energy (MeV)')
     plt.ylabel('Counts')
@@ -211,8 +211,8 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right
     npara = len(p0)
     rchi, dof = reducedChiSquare(yy, gauss(xx, *popt), yerr, npara)
     perr = np.sqrt(np.diag(pcov))
-    plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='x', elinewidth=1.5 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5, color='k')
+    plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=4,color='b')
     xxx = np.linspace(min(xx),max(xx),1000)
     plt.plot(xxx+x0-left, gauss(xxx, *popt), 'r-', label='Fit')
     plt.legend()
@@ -346,13 +346,14 @@ def fitAlphaPeak(filePathtobeSaved, filePath, p0, left=100, right=100, res_tick=
     x0 = x[ind]
     yy = y[x0-left:x0+right]
     xx = np.arange(len(yy))
+    print(xx)
+    print(x0-left)
     
     xx = convertChannelToEnergy(xx)
     x0 = convertChannelToEnergy(x0)
     left = convertChannelToEnergy(left)
     print(xx)
-    print(x0)
-    print(left)
+    print(x0-left)
 #    p0[3] = convertChannelToEnergy(p0[3])
     
     yerr = np.sqrt(yy)
@@ -389,6 +390,9 @@ def fitAlphaPeaksGaussMul(filePathtobeSaved, filePath, p0, left=100, right=100, 
         #a3, a3_e = popt[6], perr[6]
         m3, m3_e = popt[7], perr[7]
         #s3, s3_e = popt[8], perr[8]
+        popt[1] += x0-left
+        popt[4] += x0-left
+        popt[7] += x0-left
     else:
         #a1, a1_e = popt[0], perr[0]
         m1, m1_e = popt[1], perr[1]
@@ -399,10 +403,15 @@ def fitAlphaPeaksGaussMul(filePathtobeSaved, filePath, p0, left=100, right=100, 
         #a3, a3_e = popt[4], perr[4]
         m3, m3_e = popt[5], perr[5]
         #s3, s3_e = popt[-1], perr[-1]
+        popt[1] += x0-left
+        popt[3] += x0-left
+        popt[5] += x0-left
         
     print('Mean 1 (Not Scaled): %f \pm %f'%(m1+x0-left, m1_e))
     print('Mean 2 (Not Scaled): %f \pm %f'%(m2+x0-left, m2_e))
     print('Mean 3 (Not Scaled): %f \pm %f'%(m3+x0-left, m3_e)+'\n')
+    
+    
     
     return popt, perr, rchi, dof
 
@@ -453,8 +462,8 @@ def calibratePulses(folderName):
     
     filePathtobeSaved = 'Figures/Calibration/pulseLinear'
     fig = plt.figure(figsize=[8,6])
-    plt.errorbar(x, y, yerr=yerr, xerr=xerr, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5,color='k')
+    plt.errorbar(x, y, yerr=yerr, xerr=xerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=4,color='b')
 
     popt, perr = LinearFit_xIntercept(x, y, yerr)
 
@@ -511,6 +520,8 @@ def calibratePulses(folderName):
     popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
                          [8, 20, 60, 30, 310, 40, 3], left=50, right=20, res_tick=[-2,0,2], sigmaFixed=True)
     N0, N0Err = popt_am[-2], perr_am[-2]
+    
+    print(N0)
 
     slope = E0/(N0-calibIntercept)
     slopeErr = slope*np.sqrt((E0Err/E0)**2+(1/(N0-calibIntercept))**2*(calibInterceptErr**2+N0Err**2))
@@ -551,7 +562,7 @@ def pressureData(folderName):
         peak_means.append(popt[3])
         peak_means_e.append(perr[3])
         
-    plt.figure()
+    fig = plt.figure(figsize=(8,6))
     x = pressure
     y = peak_means
     yerr = peak_means_e
@@ -561,14 +572,25 @@ def pressureData(folderName):
     m_e = perr[0]
     b_e = perr[1]
     xx = np.linspace(min(x), max(x))
-    plt.plot(xx, m*xx+b*np.ones(len(xx)),label='Fit')
-    print('Intercept: %f $\pm$ %f'%(b,b_e))
-    print('Slope: %f $\pm$ %f'%(m,m_e))
-    plt.plot(x, y, 'kx', label='Data')
+    plt.plot(xx, m*xx+b*np.ones(len(xx)),label='Fit', color='r')
+    plt.errorbar(x, y, yerr=yerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=4,color='b')
+    npara = 2
+    rchi, dof = reducedChiSquare(y, m*x+b*np.ones(len(x)), yerr, npara)
     plt.xlabel('Pressure (mBar)')
-    plt.ylabel('Energy (MeV')
-    plt.legend()
+    plt.ylabel('Energy (MeV)')
+    
+    d = y-(m*x+b*np.ones(len(x)))
+    axes = plt.gca()
+    plotStudRes(axes, d, x, yerr, res_tick=[-1,0,1])
+    
+    print('\nIntercept: %f $\pm$ %f'%(b,b_e))
+    print('Slope: %f $\pm$ %f'%(m,m_e))
+    print('r-chi-square: %.2f'%rchi)
+    print('DOF: %d'%dof)
+    
     plt.show()
+    fig.savefig(outPath+'StoppingPower.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
     
     return m, m_e, b, b_e  
     
@@ -584,8 +606,8 @@ def activityFit(filePathtobeSaved, x, y, yerr, guess):
     perr = np.sqrt(np.diag(pcov))
     npara = 4
     rchi, dof = reducedChiSquare(y, activityFitFunc(x, *popt), yerr, npara)
-    plt.errorbar(x, y, yerr=yerr, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5,color='k')
+    plt.errorbar(x, y, yerr=yerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=4,color='b')
     xx = np.linspace(min(x), max(x))
     plt.plot(xx, activityFitFunc(xx, *popt), '-r', label='Fit')
     plt.legend()
@@ -641,6 +663,11 @@ def halflifeMeasurement(outFileName, folderName):
     
     return T1, T1_e, T2, T2_e
 
+def branchingRaio(InFileName):
+    outFileName = 'Figures/BranchingRatio/'+InFileName 
+    spectrum = chnsum(InFileName)
+    
+
     
 
 ######################## Function Calling Area ##################################
@@ -656,7 +683,9 @@ m_press, m_press_e, b_press, b_press_e = pressureData('PressureWBias_1')
 #                         [8, 50, 3, 60, 60, 3, 310, 70, 2], left=70, right=30, res_tick=[-2,0,2])
 
 #halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
-#spectrum = chnsum('Decay_3')
+
+#branchingRatio('Decay_3')
+
 
 
 ############### For Vincent to have fun with ####################################
@@ -665,7 +694,7 @@ m_press, m_press_e, b_press, b_press_e = pressureData('PressureWBias_1')
 #print(popt_am[-1])
 ###############################################################################3
 
-
+#print(convertChannelToEnergy(1183))
 
 
 
