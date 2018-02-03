@@ -1,7 +1,7 @@
 #import glob
 import os
 import Chn
-import matplotlib.pyplot as matplot
+import matplotlib.pyplot as plt
 
 def chnsum(folderName):
     chnfiles = os.listdir(folderName)
@@ -16,10 +16,12 @@ def chnsum(folderName):
             spectrum = spectrum + current.spectrum
     
     
-    matplot.figure(figsize=(8,6))
-    matplot.plot(spectrum[1000:-1])
-    matplot.xlabel("Channel")
-    matplot.ylabel("Count")
-    matplot.show()
+#    fig1 = plt.figure()
+#    plt.plot(spectrum)
+#    #fig2 = plt.figure()
+#    #plt.plot(spectrum[1000:-1])
+#    plt.xlabel("Channel")
+#    plt.ylabel("Count")
+#    plt.show()
     
     return spectrum

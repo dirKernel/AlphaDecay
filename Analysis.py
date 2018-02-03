@@ -137,7 +137,7 @@ def expGaussMul(x, *params):
 
 def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     fig = plt.figure(figsize=(8, 6))
-    popt, pcov = curve_fit(expGaussMul, x, y, p0=p0, maxfev=50000)
+    popt, pcov = curve_fit(expGaussMul, x, y, p0=p0, maxfev=500000)
     npara = len(p0)/4
     rchi, dof = reducedChiSquare(y, expGaussMul(x, *popt), yerr, npara)
     plt.errorbar(x+x0-left, y, yerr=yerr,fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
@@ -159,6 +159,18 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     print('Sigma 3: %f $\pm$ %f'%(popt[10], perr[10]))
     print('Lambda 3: %f $\pm$ %f'%(popt[9], perr[9]))
     print('A 3: %f $\pm$ %f'%(popt[8], perr[8]))
+    print('Mean 4 (Scaled): %f $\pm$ %f'%(popt[15], perr[15]))
+    print('Sigma 4: %f $\pm$ %f'%(popt[14], perr[14]))
+    print('Lambda 4: %f $\pm$ %f'%(popt[13], perr[13]))
+    print('A 4: %f $\pm$ %f'%(popt[12], perr[12]))
+#    print('Mean 5 (Scaled): %f $\pm$ %f'%(popt[19], perr[19]))
+#    print('Sigma 5: %f $\pm$ %f'%(popt[18], perr[18]))
+#    print('Lambda 5: %f $\pm$ %f'%(popt[17], perr[17]))
+#    print('A 5: %f $\pm$ %f'%(popt[16], perr[16]))
+#    print('Mean 6 (Scaled): %f $\pm$ %f'%(popt[23], perr[23]))
+#    print('Sigma 6: %f $\pm$ %f'%(popt[22], perr[22]))
+#    print('Lambda 6: %f $\pm$ %f'%(popt[21], perr[21]))
+#    print('A 6: %f $\pm$ %f'%(popt[20], perr[20]))
     print('RChi: %f'%(rchi))
     print('DOF: %d'%(dof))
             
@@ -582,7 +594,7 @@ def pressureData(folderName):
     
     d = y-(m*x+b*np.ones(len(x)))
     axes = plt.gca()
-    plotStudRes(axes, d, x, yerr, res_tick=[-1,0,1])
+    plotStudRes(axes, d, x, yerr, res_tick=[-5,0,5])
     
     print('\nIntercept: %f $\pm$ %f'%(b,b_e))
     print('Slope: %f $\pm$ %f'%(m,m_e))
@@ -590,7 +602,7 @@ def pressureData(folderName):
     print('DOF: %d'%dof)
     
     plt.show()
-    fig.savefig(outPath+'StoppingPower.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
+    fig.savefig(outPath+'/StoppingPower.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
     
     return m, m_e, b, b_e  
     
@@ -663,17 +675,58 @@ def halflifeMeasurement(outFileName, folderName):
     
     return T1, T1_e, T2, T2_e
 
-def branchingRaio(InFileName):
+def branchingRatio_FourPeaks(InFileName):
     outFileName = 'Figures/BranchingRatio/'+InFileName 
     spectrum = chnsum(InFileName)
-    
+#    left = 1200
+    left = 1280
+    right = 1330
+#    right = 1280
+    leftSpec = spectrum[left:right]
+    y = leftSpec
+    yerr = np.sqrt(y)
+    x = np.arange(left,right)
+    plt.plot(x,leftSpec)
+#    p0 = [700, 0.1, 2.5, left+20, 7000, 0.1, 1.5, left+50, 15000, 0.3, 1.5, left+115, 6000, 0.3, 1.5, left+125, 5000, 0.3, 1.3, left+130] # A, l, s, m
+#    p0 = [700, 0.1, 2.5, left+20, 7000, 0.1, 1.5, left+50, 15000, 0.3, 1.5, left+115, 6000, 0.3, 1.5, left+125]
+    p0 = [10000, 0.3, 1.3, left+35, 4000, 0.3, 1.3, left+45, 3000, 1, 1.3, left+15, 2000, 1, 1.3, left+25] # A, l, s, m
+#    p0 = [500, 0.1, 2, left+20, 600, 0.1, 2, left+55] # A, l, s, m
+    popt, perr, rchi, dof = expGaussFitMul(outFileName, x, y, yerr, p0=p0, x0=0, left=0, res_tick=[-2,0,2])
 
+    popt_last = popt[-4:]
+    popt_slast = popt[-8:-4]
+    popt_sslast = popt[-12:-8]
+    popt_ssslast = popt[-16:-12]
+#    popt_sssslast = popt[-20:-16]
+#    popt_ssssslast = popt[-24:-20]
+    plt.plot(x, expGauss(x, *popt_last), color='k')
+    plt.plot(x, expGauss(x, *popt_slast))
+    plt.plot(x, expGauss(x, *popt_sslast))
+    plt.plot(x, expGauss(x, *popt_ssslast))
+#    plt.plot(x, expGauss(x, *popt_sssslast))
+#    plt.plot(x, expGauss(x, *popt_ssssslast))
     
-
+def branchingRatio_Largest(InFileName):
+    outFileName = 'Figures/BranchingRatio/'+InFileName 
+    spectrum = chnsum(InFileName)
+    left = 1820
+    right = 1840
+    leftSpec = spectrum[left:right]
+    y = leftSpec
+    yerr = np.sqrt(y)
+    x = np.arange(left,right)
+    plt.plot(x,leftSpec)
+    p0 = [3700, 1, 1, left+15, 3700, 1, 1, left+30]
+    popt, perr, rchi, dof = expGaussFitMul(outFileName, x, y, yerr, p0=p0, x0=0, left=0, res_tick=[-2,0,2])
+    
+    popt_last = popt[-4:]
+    popt_slast = popt[-8:-4]
+    plt.plot(x, expGauss(x, *popt_last), color='k')
+    plt.plot(x, expGauss(x, *popt_slast))
 ######################## Function Calling Area ##################################
     
 #m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
-m_press, m_press_e, b_press, b_press_e = pressureData('PressureWBias_1')
+#m_press, m_press_e, b_press, b_press_e = pressureData('PressureWBias_1')
 
 #popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
 #                         [100, 2.5, 2, 20, 785, 2.5, 1.8, 30, 1750, 2, 1.6, 40], left=40, right=20, res_tick=[-2,0,2])
@@ -684,7 +737,8 @@ m_press, m_press_e, b_press, b_press_e = pressureData('PressureWBias_1')
 
 #halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
 
-#branchingRatio('Decay_3')
+branchingRatio_FourPeaks('Decay_3')
+#branchingRatio_Largest('Decay_60_min_1')
 
 
 
