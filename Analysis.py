@@ -140,8 +140,8 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     popt, pcov = curve_fit(expGaussMul, x, y, p0=p0, maxfev=50000)
     npara = len(p0)/4
     rchi, dof = reducedChiSquare(y, expGaussMul(x, *popt), yerr, npara)
-    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5,color='k')
+    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=4,color='b')
     plt.plot(x+x0-left, expGaussMul(x, *popt), '-r', label='Fit')
     plt.legend()
     plt.xlabel('Channels')
@@ -177,8 +177,8 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     popt, pcov = curve_fit(expGauss, x, y, p0=p0, maxfev=50000)
     npara = len(p0)
     rchi, dof = reducedChiSquare(y, expGauss(x, *popt), yerr, npara)
-    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5,color='k')
+    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=4,color='b')
     plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
     plt.xlabel('Energy (MeV)')
     plt.ylabel('Counts')
@@ -211,8 +211,8 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right
     npara = len(p0)
     rchi, dof = reducedChiSquare(yy, gauss(xx, *popt), yerr, npara)
     perr = np.sqrt(np.diag(pcov))
-    plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='x', elinewidth=1.5 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5, color='k')
+    plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=4,color='b')
     xxx = np.linspace(min(xx),max(xx),1000)
     plt.plot(xxx+x0-left, gauss(xxx, *popt), 'r-', label='Fit')
     plt.legend()
@@ -462,8 +462,8 @@ def calibratePulses(folderName):
     
     filePathtobeSaved = 'Figures/Calibration/pulseLinear'
     fig = plt.figure(figsize=[8,6])
-    plt.errorbar(x, y, yerr=yerr, xerr=xerr, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5,color='k')
+    plt.errorbar(x, y, yerr=yerr, xerr=xerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=4,color='b')
 
     popt, perr = LinearFit_xIntercept(x, y, yerr)
 
@@ -572,21 +572,22 @@ def pressureData(folderName):
     m_e = perr[0]
     b_e = perr[1]
     xx = np.linspace(min(x), max(x))
-    plt.plot(xx, m*xx+b*np.ones(len(xx)),label='Fit')
-    plt.errorbar(x, y, yerr=yerr, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5,color='k')
+    plt.plot(xx, m*xx+b*np.ones(len(xx)),label='Fit', color='r')
+    plt.errorbar(x, y, yerr=yerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=4,color='b')
     npara = 2
     rchi, dof = reducedChiSquare(y, m*x+b*np.ones(len(x)), yerr, npara)
+    plt.xlabel('Pressure (mBar)')
+    plt.ylabel('Energy (MeV)')
     
     d = y-(m*x+b*np.ones(len(x)))
     axes = plt.gca()
     plotStudRes(axes, d, x, yerr, res_tick=[-1,0,1])
     
-    print('Intercept: %f $\pm$ %f'%(b,b_e))
+    print('\nIntercept: %f $\pm$ %f'%(b,b_e))
     print('Slope: %f $\pm$ %f'%(m,m_e))
-    plt.xlabel('Pressure (mBar)')
-    plt.ylabel('Energy (MeV)')
-    plt.legend()
+    print('r-chi-square: %.2f'%rchi)
+    print('DOF: %d'%dof)
     
     plt.show()
     fig.savefig(outPath+'StoppingPower.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
@@ -605,8 +606,8 @@ def activityFit(filePathtobeSaved, x, y, yerr, guess):
     perr = np.sqrt(np.diag(pcov))
     npara = 4
     rchi, dof = reducedChiSquare(y, activityFitFunc(x, *popt), yerr, npara)
-    plt.errorbar(x, y, yerr=yerr, fmt='x', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5,color='k')
+    plt.errorbar(x, y, yerr=yerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=4,color='b')
     xx = np.linspace(min(x), max(x))
     plt.plot(xx, activityFitFunc(xx, *popt), '-r', label='Fit')
     plt.legend()
