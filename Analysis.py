@@ -725,21 +725,35 @@ def integrateExpGauss(params):
 
 def diffExpGaussSigma(x,params):
     #returns the derivative of ExpGaussFunction with respect to sigma as function of x
-    return None
+    A = params[0]
+    l = params[1]
+    s = params[2]
+    m = params[3]
+    return A*l/(2*s**2)*np.exp(-(x-m)**2/(2*s**2))*(np.sqrt(2/np.pi)*(x-m-l*(s**2))+(l**2)*(s**3)*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s))))
+
 def integrateDiffExpGaussSigma(params):
     return quad(diffExpGaussSigma, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
 
+
 def diffExpGaussLambda(x, params):
     # returns the derivative of ExpGaussFunction with respect to lambda as function of x
-    return None
+    A = params[0]
+    l = params[1]
+    s = params[2]
+    m = params[3]
+
+    return A/2*np.exp(l/2*(2*x-2*m+l*s*s))*((1+l*(x-m+l*s**2))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))-np.sqrt(2/np.pi)*l*s*(np.exp(-(x-m+l*s**2)**2/(2*s**2))))
 
 def integrateDiffExpGaussLambda(params):
     return quad(diffExpGaussLambda, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
 
+
 def diffExpGaussA(x,params):
     # returns the derivative of ExpGaussFunction with respect to lambda as function of x
-
-    return None
+    l = params[1]
+    s = params[2]
+    m = params[3]
+    return l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))
 
 def integrateDiffExpGaussA(params):
     return quad(diffExpGaussA, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
@@ -747,7 +761,12 @@ def integrateDiffExpGaussA(params):
 
 def diffExpGaussMu(x,params):
     # returns the derivative of ExpGaussFunction with respect to mu as function of x
-    return None
+    A = params[0]
+    l = params[1]
+    s = params[2]
+    m = params[3]
+
+    return A*l/(2*np.sqrt(np.pi)*s)*np.exp(l/2*(2*x-2*m+l*s*s))*(np.sqrt(2)*(np.exp(-(x-m+l*s**2)**2/(2*s**2)))-np.sqrt(np.pi)*l*s*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s))))
 
 def integrateDiffExpGaussMu(params):
     return quad(diffExpGaussMu, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
