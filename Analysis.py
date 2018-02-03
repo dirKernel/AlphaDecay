@@ -6,6 +6,7 @@ import matplotlib as mpl
 mpl.rcParams['axes.linewidth'] = 1.5 #set the value globally
 mpl.rcParams.update({'font.size': 15})
 from scipy.optimize import curve_fit
+from scipy.integrate import quad
 import scipy as sp
 import math
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -743,4 +744,38 @@ def locallyDifferentiate(x,y,xerr,yerr):
     return X,Y,Xerr,Yerr
 
 
+###################################################### Branching ratios calculation ###############################################################
 
+def integrateExpGauss(params):
+    # params is the vector (A,lambda, sigma, mu) describing the expgaussian integrand
+    return quad(expGauss, 0, np.inf, args=(params[0],params[1],params[2],params[3]))[0]
+
+
+def diffExpGaussSigma(x,params):
+    #returns the derivative of ExpGaussFunction with respect to sigma as function of x
+    return None
+def integrateDiffExpGaussSigma(params):
+    return quad(diffExpGaussSigma, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
+
+def diffExpGaussLambda(x, params):
+    # returns the derivative of ExpGaussFunction with respect to lambda as function of x
+    return None
+
+def integrateDiffExpGaussLambda(params):
+    return quad(diffExpGaussLambda, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
+
+def diffExpGaussA(x,params):
+    # returns the derivative of ExpGaussFunction with respect to lambda as function of x
+
+    return None
+
+def integrateDiffExpGaussA(params):
+    return quad(diffExpGaussA, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
+
+
+def diffExpGaussMu(x,params):
+    # returns the derivative of ExpGaussFunction with respect to mu as function of x
+    return None
+
+def integrateDiffExpGaussMu(params):
+    return quad(diffExpGaussMu, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
