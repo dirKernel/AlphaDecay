@@ -11,7 +11,7 @@ import scipy as sp
 import math
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
-#from chnsum import chnsum
+from chnsum import chnsum
 #import uncertainties as unc  
 #import uncertainties.unumpy as unp  
 
@@ -738,81 +738,6 @@ def branchingRatio_Largest(InFileName):
     print(errToReturn)
     
     return valueToReturn, errToReturn
-    
-######################## Function Calling Area ##################################
-    
-#m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
-#m_press, m_press_e, b_press, b_press_e = pressureData('PressureWBias_1')
-
-#popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
-#                         [100, 2.5, 2, 20, 785, 2.5, 1.8, 30, 1750, 2, 1.6, 40], left=40, right=20, res_tick=[-2,0,2])
-#popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
-#                         [8, 20, 60, 30, 310, 40, 3], left=50, right=20, res_tick=[-2,0,2], sigmaFixed=True)
-#popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
-#                         [8, 50, 3, 60, 60, 3, 310, 70, 2], left=70, right=30, res_tick=[-2,0,2])
-
-#halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
-
-#branchingRatio_FourPeaks('Decay_3')
-branchingRatio_Largest('Decay_3')
-
-
-
-############### For Vincent to have fun with ####################################
-#popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
-#                         [6, 10, 60, 20, 310, 30, 3, 0.01], left=40, right=20, res_tick=[-2,0,2], sigmaFixed=True)
-#print(popt_am[-1])
-###############################################################################3
-
-#print(convertChannelToEnergy(1183))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-########################## Fit energy histogram to extract peak energy of the alpha particle ################################
-########################### Determine stopping power as a function of distance ###############################################
-
-def locallyDifferentiate(x,y,xerr,yerr):
-    """
-    :param x: x data vector
-    :param y: y data vector
-    :param xerr: vector of error on x data
-    :param yerr: vector of error on y data
-    :return: (X,Y) are the local derivative of the (x,y) data set. Ie for each adjacent data points in the input data set, a straight line is drawn between them
-    and the slope of the line is added to the vector Y. The vector X is compromised of the midpoints between the adjacent x's. The errors on X,Y are computed in terms
-     of xerr and yerr
-    """
-    X=[]
-    Xerr=[]
-    for n in len(x):
-        X.append((x[n+1]+x[n])/2)
-        Xerr.append((xerr[n+1]+xerr[n])/2)
-    print(len(X))
-    Y=[]
-    Yerr=[]
-    for n in len(x):
-        Y.append((y[n+1]-y[n])/(x[n+1]-x[n]))
-        Yerr.append(Y[n]*np.sqrt(((xerr[n+1]**2+xerr[n]**2)/(x[n+1]-x[n])**2)+((yerr[n+1]**2+yerr[n]**2)/(y[n+1]-y[n])**2)))
-    print(len(Y))
-
-    return X,Y,Xerr,Yerr
 
 
 ###################################################### Branching ratios calculation ###############################################################
@@ -873,12 +798,12 @@ def calculateBranchRatio(Params,ParamErrs):
     # Params is a lists of lists. Each embedded list is a set of parameters for a single transition fit, [A,l,s,m]
     # ParamErrs is similarly a list of lists of the associated errors on the fits of each parameters
     # Assume the parameter vectors are orderred in the order of increasing energy
-    b=[integrateExpGauss(Params[i]) for i in range(1,5)]
+    b=[integrateExpGauss(Params[i-1]) for i in range(1,5)]
     totalArea = sum(b)
-    totalDiffA= sum([integrateDiffExpGaussA(Params[i]) for i in range(1,5)])
-    totalDiffLambda = sum([integrateDiffExpGaussLambda(Params[i]) for i in range(1,5)])
-    totalDiffSigma = sum([integrateDiffExpGaussSigma(Params[i]) for i in range(1,5)])
-    totalDiffMu = sum([integrateDiffExpGaussMu(Params[i]) for i in range(1,5)])
+    totalDiffA= sum([integrateDiffExpGaussA(Params[i-1]) for i in range(1,5)])
+    totalDiffLambda = sum([integrateDiffExpGaussLambda(Params[i-1]) for i in range(1,5)])
+    totalDiffSigma = sum([integrateDiffExpGaussSigma(Params[i-1]) for i in range(1,5)])
+    totalDiffMu = sum([integrateDiffExpGaussMu(Params[i-1]) for i in range(1,5)])
     b =np.array(b)
     b = np.multiply((1 / totalArea), b)
     print(b)
@@ -887,21 +812,21 @@ def calculateBranchRatio(Params,ParamErrs):
         # propagate the error
         err = 0.0
         for n in range(1,5): #all fitted function parameter errors propogate so loop through all of them
-            paramErrs = ParamErrs[n]
+            paramErrs = ParamErrs[n-1]
             if n==i:
-                derivsA = [(integrateDiffExpGaussA(Params[i])*totalArea-totalDiffA*integrateExpGauss(Params[i]))/(totalArea**2),
-                           (integrateDiffExpGaussLambda(Params[i])*totalArea-totalDiffLambda*integrateExpGauss(Params[i]))/(totalArea**2),
-                          (integrateDiffExpGaussSigma(Params[i])*totalArea-totalDiffSigma*integrateExpGauss(Params[i]))/(totalArea**2),
-                (integrateDiffExpGaussMu(Params[i])*totalArea-totalDiffMu*integrateExpGauss(Params[i]))/(totalArea**2)]
+                derivsA = [(integrateDiffExpGaussA(Params[i-1])*totalArea-totalDiffA*integrateExpGauss(Params[i-1]))/(totalArea**2),
+                           (integrateDiffExpGaussLambda(Params[i-1])*totalArea-totalDiffLambda*integrateExpGauss(Params[i-1]))/(totalArea**2),
+                          (integrateDiffExpGaussSigma(Params[i-1])*totalArea-totalDiffSigma*integrateExpGauss(Params[i-1]))/(totalArea**2),
+                (integrateDiffExpGaussMu(Params[i-1])*totalArea-totalDiffMu*integrateExpGauss(Params[i-1]))/(totalArea**2)]
                 #derivsA and derivsB represent the different derivtives that distinquish whether or not the index of the branching function corresponds to the index of the
                 # propogated function
-                err = err + sum([(derivsA[j]*paramErrs[j])**2 for j in range(1,5)])
+                err = err + sum([(derivsA[j-1]*paramErrs[j-1])**2 for j in range(1,5)])
             else:
-                derivsB = [(integrateExpGauss(Params[i])*integrateDiffExpGaussA(Params[n]))/(totalArea**2),
-                           (integrateExpGauss(Params[i])*integrateDiffExpGaussLambda(Params[n]))/(totalArea**2),
-                           (integrateExpGauss(Params[i])*integrateDiffExpGaussSigma(Params[n]))/(totalArea**2),
-                           (integrateExpGauss(Params[i]) * integrateDiffExpGaussMu(Params[n])) / (totalArea ** 2)]
-                err = err + sum([(derivsB[j]*paramErrs[j])**2 for j in range(1,5)])
+                derivsB = [(integrateExpGauss(Params[i-1])*integrateDiffExpGaussA(Params[n-1]))/(totalArea**2),
+                           (integrateExpGauss(Params[i-1])*integrateDiffExpGaussLambda(Params[n-1]))/(totalArea**2),
+                           (integrateExpGauss(Params[i-1])*integrateDiffExpGaussSigma(Params[n-1]))/(totalArea**2),
+                           (integrateExpGauss(Params[i-1]) * integrateDiffExpGaussMu(Params[n-1])) / (totalArea ** 2)]
+                err = err + sum([(derivsB[j-1]*paramErrs[j-1])**2 for j in range(1,5)])
             bErr.append(err)
 
     b = np.array(b)
@@ -909,4 +834,85 @@ def calculateBranchRatio(Params,ParamErrs):
 
     print("Branching ratios: "+str(b))
     print("Errors on ratios: "+str(bErr))
+
+
+    
+######################## Function Calling Area ##################################
+    
+#m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
+#m_press, m_press_e, b_press, b_press_e = pressureData('PressureWBias_1')
+
+#popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
+#                         [100, 2.5, 2, 20, 785, 2.5, 1.8, 30, 1750, 2, 1.6, 40], left=40, right=20, res_tick=[-2,0,2])
+#popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
+#                         [8, 20, 60, 30, 310, 40, 3], left=50, right=20, res_tick=[-2,0,2], sigmaFixed=True)
+#popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
+#                         [8, 50, 3, 60, 60, 3, 310, 70, 2], left=70, right=30, res_tick=[-2,0,2])
+
+#halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
+
+
+Values = branchingRatio_FourPeaks('Decay_3')[0]
+Errs = branchingRatio_FourPeaks('Decay_3')[1]
+calculateBranchRatio(Values,Errs)
+#branchingRatio_Largest('Decay_3')
+
+
+
+############### For Vincent to have fun with ####################################
+#popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
+#                         [6, 10, 60, 20, 310, 30, 3, 0.01], left=40, right=20, res_tick=[-2,0,2], sigmaFixed=True)
+#print(popt_am[-1])
+###############################################################################3
+
+#print(convertChannelToEnergy(1183))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+########################## Fit energy histogram to extract peak energy of the alpha particle ################################
+########################### Determine stopping power as a function of distance ###############################################
+
+def locallyDifferentiate(x,y,xerr,yerr):
+    """
+    :param x: x data vector
+    :param y: y data vector
+    :param xerr: vector of error on x data
+    :param yerr: vector of error on y data
+    :return: (X,Y) are the local derivative of the (x,y) data set. Ie for each adjacent data points in the input data set, a straight line is drawn between them
+    and the slope of the line is added to the vector Y. The vector X is compromised of the midpoints between the adjacent x's. The errors on X,Y are computed in terms
+     of xerr and yerr
+    """
+    X=[]
+    Xerr=[]
+    for n in len(x):
+        X.append((x[n+1]+x[n])/2)
+        Xerr.append((xerr[n+1]+xerr[n])/2)
+    print(len(X))
+    Y=[]
+    Yerr=[]
+    for n in len(x):
+        Y.append((y[n+1]-y[n])/(x[n+1]-x[n]))
+        Yerr.append(Y[n]*np.sqrt(((xerr[n+1]**2+xerr[n]**2)/(x[n+1]-x[n])**2)+((yerr[n+1]**2+yerr[n]**2)/(y[n+1]-y[n])**2)))
+    print(len(Y))
+
+    return X,Y,Xerr,Yerr
+
 
