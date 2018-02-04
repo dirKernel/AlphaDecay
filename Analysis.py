@@ -596,10 +596,10 @@ def pressureData(folderName):
     #(once again, in cm)
     Distance_e = ((4.0*(0.005**2.0))**0.5)*100.0
     #Air density rho_air is (M_air*pressure)/(R*T)
-    #M_air is a reference value
+    #The value and error of M_air are referenced in the .bib file
     M_air =  28.964 #in [g] [mol-1]
     M_air_e =  0.002 #in [g] [mol-1]
-    #R is 8.31, but need to find a better source. Assume error is 0.01
+    #The value and error of R are referenced in the .bib file
     R = 83.14449*1000.0  #in [cm3] [mbar] [K−1] [mol−1]
     R_e =  0.00056*1000.0 #in [cm3] [mbar] [K−1] [mol−1] 
     #T was measured as multiple values between 21.0 and 22.6, so for now take 21.8
