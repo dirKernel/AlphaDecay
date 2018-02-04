@@ -147,30 +147,12 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     plt.xlabel('Channels')
     plt.ylabel('Counts')
     perr = np.sqrt(np.diag(pcov))
-    print('\nMean 1 (Scaled): %f $\pm$ %f'%(popt[3], perr[3]))
-    print('Sigma 1: %f $\pm$ %f'%(popt[2], perr[2]))
-    print('Lambda 1: %f $\pm$ %f'%(popt[1], perr[1]))
-    print('A 1: %f $\pm$ %f'%(popt[0], perr[0]))
-    print('Mean 2 (Scaled): %f $\pm$ %f'%(popt[7], perr[7]))
-    print('Sigma 2: %f $\pm$ %f'%(popt[6], perr[6]))
-    print('Lambda 2: %f $\pm$ %f'%(popt[5], perr[5]))
-    print('A 2: %f $\pm$ %f'%(popt[4], perr[4]))
-    print('Mean 3 (Scaled): %f $\pm$ %f'%(popt[11], perr[11]))
-    print('Sigma 3: %f $\pm$ %f'%(popt[10], perr[10]))
-    print('Lambda 3: %f $\pm$ %f'%(popt[9], perr[9]))
-    print('A 3: %f $\pm$ %f'%(popt[8], perr[8]))
-    print('Mean 4 (Scaled): %f $\pm$ %f'%(popt[15], perr[15]))
-    print('Sigma 4: %f $\pm$ %f'%(popt[14], perr[14]))
-    print('Lambda 4: %f $\pm$ %f'%(popt[13], perr[13]))
-    print('A 4: %f $\pm$ %f'%(popt[12], perr[12]))
-#    print('Mean 5 (Scaled): %f $\pm$ %f'%(popt[19], perr[19]))
-#    print('Sigma 5: %f $\pm$ %f'%(popt[18], perr[18]))
-#    print('Lambda 5: %f $\pm$ %f'%(popt[17], perr[17]))
-#    print('A 5: %f $\pm$ %f'%(popt[16], perr[16]))
-#    print('Mean 6 (Scaled): %f $\pm$ %f'%(popt[23], perr[23]))
-#    print('Sigma 6: %f $\pm$ %f'%(popt[22], perr[22]))
-#    print('Lambda 6: %f $\pm$ %f'%(popt[21], perr[21]))
-#    print('A 6: %f $\pm$ %f'%(popt[20], perr[20]))
+    
+    for i in range(0,len(popt),4):
+        print('A %d: %f $\pm$ %f'%(i/4, popt[i], perr[i]))
+        print('Lambda %d: %f $\pm$ %f'%(i/4, popt[i+1], perr[i+1]))
+        print('Sigma %d: %f $\pm$ %f'%(i/4, popt[i+2], perr[i+2]))
+        print('Mean %d (Scaled): %f $\pm$ %f\n'%(i/4, popt[i+3], perr[i+3]))
     print('RChi: %f'%(rchi))
     print('DOF: %d'%(dof))
             
@@ -430,14 +412,15 @@ def fitAlphaPeaksGaussMul(filePathtobeSaved, filePath, p0, left=100, right=100, 
 ################################# Transform from channel number data to energy ###########################################
 
 
-
-
-def convertChannelToEnergy(channelData):
+def convertChannelToEnergy(channelData, err=None):
     m = slope
     b = intercept
     energyData = m*channelData + b
-
-    return energyData
+    if err != None:
+        errProp = m*err
+        return energyData, errProp
+    else:
+        return energyData
 
 
 def calibratePulses(folderName):
@@ -678,8 +661,8 @@ def halflifeMeasurement(outFileName, folderName):
 def branchingRatio_FourPeaks(InFileName):
     outFileName = 'Figures/BranchingRatio/'+InFileName 
     spectrum = chnsum(InFileName)
-#    left = 1200
-    left = 1280
+    left = 1200
+#    left = 1280
     right = 1330
 #    right = 1280
     leftSpec = spectrum[left:right]
@@ -687,42 +670,75 @@ def branchingRatio_FourPeaks(InFileName):
     yerr = np.sqrt(y)
     x = np.arange(left,right)
     plt.plot(x,leftSpec)
-#    p0 = [700, 0.1, 2.5, left+20, 7000, 0.1, 1.5, left+50, 15000, 0.3, 1.5, left+115, 6000, 0.3, 1.5, left+125, 5000, 0.3, 1.3, left+130] # A, l, s, m
+    # Guess of fitting 5 peaks
+    p0 = [700, 0.1, 2.5, left+20, 7000, 0.1, 1.5, left+50, 15000, 0.3, 1.5, left+115, 6000, 0.3, 1.5, left+125, 5000, 0.3, 1.3, left+130] # A, l, s, m
+    # Guess of fitting 4 peaks
 #    p0 = [700, 0.1, 2.5, left+20, 7000, 0.1, 1.5, left+50, 15000, 0.3, 1.5, left+115, 6000, 0.3, 1.5, left+125]
-    p0 = [10000, 0.3, 1.3, left+35, 4000, 0.3, 1.3, left+45, 3000, 1, 1.3, left+15, 2000, 1, 1.3, left+25] # A, l, s, m
+#    p0 = [10000, 0.3, 1.3, left+35, 4000, 0.3, 1.3, left+45, 3000, 1, 1.3, left+15, 2000, 1, 1.3, left+25] # A, l, s, m
 #    p0 = [500, 0.1, 2, left+20, 600, 0.1, 2, left+55] # A, l, s, m
     popt, perr, rchi, dof = expGaussFitMul(outFileName, x, y, yerr, p0=p0, x0=0, left=0, res_tick=[-2,0,2])
 
-    popt_last = popt[-4:]
-    popt_slast = popt[-8:-4]
-    popt_sslast = popt[-12:-8]
-    popt_ssslast = popt[-16:-12]
-#    popt_sssslast = popt[-20:-16]
-#    popt_ssssslast = popt[-24:-20]
-    plt.plot(x, expGauss(x, *popt_last), color='k')
-    plt.plot(x, expGauss(x, *popt_slast))
-    plt.plot(x, expGauss(x, *popt_sslast))
-    plt.plot(x, expGauss(x, *popt_ssslast))
-#    plt.plot(x, expGauss(x, *popt_sssslast))
-#    plt.plot(x, expGauss(x, *popt_ssssslast))
+    # Plot each component convolution
+    for i in range(int(len(popt)/4)):
+        temp = popt[i*4:(i+1)*4]
+        plt.plot(x, expGauss(x, *temp))
+
+    # convert mean channels to energies
+    for i in range(0, len(popt), 4):
+        popt[i+3], perr[i+3] = convertChannelToEnergy(popt[i+3], err=perr[i+3])
+
+    # make fitted parameter into a matrix, as well as the fitting error in another matrix
+    l = int(len(popt)/4)
+    valueToReturn, errToReturn = np.zeros((l,4)), np.zeros((l,4))
+    for i in range(l):
+        valueToReturn[i] = popt[4*i:4*i+4]
+        errToReturn[i] = perr[4*i:4*i+4]
+    print(valueToReturn)
+    print(errToReturn)
+    
+    return valueToReturn, errToReturn
+    
     
 def branchingRatio_Largest(InFileName):
     outFileName = 'Figures/BranchingRatio/'+InFileName 
     spectrum = chnsum(InFileName)
-    left = 1820
-    right = 1840
+    left = 1835
+    right = 1852
     leftSpec = spectrum[left:right]
     y = leftSpec
     yerr = np.sqrt(y)
     x = np.arange(left,right)
     plt.plot(x,leftSpec)
-    p0 = [3700, 1, 1, left+15, 3700, 1, 1, left+30]
+    p0 = [25000, 1, 2, left+20, 5000, 1, 2, left+15]
     popt, perr, rchi, dof = expGaussFitMul(outFileName, x, y, yerr, p0=p0, x0=0, left=0, res_tick=[-2,0,2])
     
-    popt_last = popt[-4:]
-    popt_slast = popt[-8:-4]
-    plt.plot(x, expGauss(x, *popt_last), color='k')
-    plt.plot(x, expGauss(x, *popt_slast))
+    # Plot each component convolution
+    for i in range(int(len(popt)/4)):
+        temp = popt[i*4:(i+1)*4]
+        plt.plot(x, expGauss(x, *temp))
+
+    # convert mean channels to energies
+    for i in range(0, len(popt), 4):
+        popt[i+3], perr[i+3] = convertChannelToEnergy(popt[i+3], err=perr[i+3])
+
+    print(popt)
+    # make fitted parameter into a matrix, as well as the fitting error in another matrix
+    l = int(len(popt)/4)
+    print(l)
+    valueToReturn, errToReturn = np.zeros((l,4)), np.zeros((l,4))
+    for i in range(l):
+        valueToReturn[i] = popt[4*i:4*i+4]
+        errToReturn[i] = perr[4*i:4*i+4]
+        print(popt[4*i:4*i+4])
+    print(valueToReturn)
+    print(errToReturn)
+    valueToReturn[0], valueToReturn[1] = valueToReturn[1], valueToReturn[0]
+    errToReturn[0], errToReturn[1] = errToReturn[1], errToReturn[0]
+    print(valueToReturn)
+    print(errToReturn)
+    
+    return valueToReturn, errToReturn
+    
 ######################## Function Calling Area ##################################
     
 #m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
@@ -737,8 +753,8 @@ def branchingRatio_Largest(InFileName):
 
 #halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
 
-branchingRatio_FourPeaks('Decay_3')
-#branchingRatio_Largest('Decay_60_min_1')
+#branchingRatio_FourPeaks('Decay_3')
+branchingRatio_Largest('Decay_3')
 
 
 
