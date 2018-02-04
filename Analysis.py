@@ -34,6 +34,10 @@ interceptErr = 0.00397196078318
 #E0 = 5.48556
 #E0Err = 0.00012
 
+####################################################################################################################
+################################################### Fitters ########################################################
+####################################################################################################################
+
 def plotStudRes(ax, d, xx , yerr, res_tick, x0=0, left=0):
     stu_d = d/yerr
     stu_d_err = np.ones(len(d))
@@ -409,8 +413,9 @@ def fitAlphaPeaksGaussMul(filePathtobeSaved, filePath, p0, left=100, right=100, 
     
     return popt, perr, rchi, dof
 
-################################# Transform from channel number data to energy ###########################################
-
+####################################################################################################################
+################################# Transform from channel number data to energy #####################################
+####################################################################################################################
 
 def convertChannelToEnergy(channelData, err=None):
     m = slope
@@ -421,6 +426,9 @@ def convertChannelToEnergy(channelData, err=None):
         return energyData, errProp
     else:
         return energyData
+
+
+
 
 
 def calibratePulses(folderName):
@@ -530,6 +538,14 @@ def calibratePulses(folderName):
     print('Calibration Intercept, b: ' + str(intercept) + ' \pm ' + str(interceptErr))
 
     return m, h, m_e, h_e
+
+
+
+
+
+####################################################################################################################
+############################################# Stopping power calculation ###########################################
+####################################################################################################################
 
 def pressureData(folderName):
     """
@@ -655,7 +671,6 @@ def locallyDifferentiate(x,y,xerr,yerr):
 
     return X,Y,Xerr,Yerr
 
-
 def calculateStoppingPower(folderName):
     # constants
     Distance = (89.530 - 15.810 - (13.890-9.380))*100.0
@@ -689,8 +704,9 @@ def calculateStoppingPower(folderName):
     plt.ylabel('Stopping Power (MeV/cm)')
 
 
-
-########################### Fit bismuth activity data in order to extract lead and bismuth half-lives ##########################
+####################################################################################################################
+################## Fit bismuth activity data in order to extract lead and bismuth half-lives #######################
+####################################################################################################################
 
 def activityFitFunc(x, lambda1, lambda2, N0, N1):
     return N0*lambda1*lambda2*(np.exp(-lambda1*x)-np.exp(-lambda2*x))/(lambda2-lambda1)+N1*np.exp(-lambda2*x)
@@ -840,8 +856,9 @@ def branchingRatio_Largest(InFileName):
     
     return valueToReturn, errToReturn
 
-
-###################################################### Branching ratios calculation ###############################################################
+####################################################################################################################
+#################################### Branching ratios calculation ##################################################
+####################################################################################################################
 
 def integrateExpGauss(params):
     # params is the vector (A,lambda, sigma, mu) describing the expgaussian integrand
@@ -937,8 +954,9 @@ def calculateBranchRatio(Params,ParamErrs):
     print("Errors on ratios: "+str(bErr))
 
 
-
-######################## Function Calling Area ##################################
+####################################################################################################################
+############################################## Function Calling Area ###############################################
+####################################################################################################################
     
 #m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
 #m_press, m_press_e, b_press, b_press_e, Energy, Energy_e, Thickness, Thickness_e = pressureData('PressureWBias_1')
@@ -986,29 +1004,6 @@ calculateStoppingPower('PressureWBias_1')
 ###############################################################################3
 
 #print(convertChannelToEnergy(1183))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-########################## Fit energy histogram to extract peak energy of the alpha particle ################################
-########################### Determine stopping power as a function of distance ###############################################
 
 
 
