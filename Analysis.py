@@ -613,10 +613,83 @@ def pressureData(folderName):
         Thickness.append( M_air*pressure[i]*Distance/(R*T) ) #in [g] [cm-2]
         Thickness_e.append( ( (M_air_e * pressure[i]*Distance/(R*T))**2 + (pressure_e * M_air*Distance/(R*T))**2 + (Distance_e * M_air*pressure[i]/(R*T))**2 + (R_e * M_air*pressure[i]*Distance/(R*R*T))**2 + (T_e * M_air*pressure[i]*Distance/(R*T*T))**2 )**0.5 ) #in [g] [cm-2]
     
-    
-    
-    return m, m_e, b, b_e, peak_means, peak_means_e, Thickness, Thickness_e  
-    
+
+    ## Reshuffle data to be in order of increasing thickness
+
+    Energy = peak_means
+    Energy_e = peak_means_e
+
+    data = [(Thickness[n], Energy[n], Thickness_e[n], Energy_e[n]) for n in range(len(Thickness))]
+
+    data = sorted(data, key=lambda Thickness: Thickness[2])
+    print(data)
+    Thickness = [data[n][0] for n in range(len(data))]
+    Energy = [data[n][1] for n in range(len(data))]
+    Thickness_e = [data[n][2] for n in range(len(data))]
+    Energy_e = [data[n][3] for n in range(len(data))]
+
+    return m, m_e, b, b_e, Energy, Energy_e, Thickness, Thickness_e
+
+def locallyDifferentiate(x,y,xerr,yerr):
+    """
+    :param x: x data vector
+    :param y: y data vector
+    :param xerr: vector of error on x data
+    :param yerr: vector of error on y data
+    :return: (X,Y) are the local derivative of the (x,y) data set. Ie for each adjacent data points in the input data set, a straight line is drawn between them
+    and the slope of the line is added to the vector Y. The vector X is compromised of the midpoints between the adjacent x's. The errors on X,Y are computed in terms
+     of xerr and yerr
+    """
+    X=[]
+    Xerr=[]
+    for n in range(1,len(x)):
+        X.append((x[n]+x[n-1])/2)
+        Xerr.append((xerr[n]+xerr[n-1])/2)
+    print(len(X))
+    Y=[]
+    Yerr=[]
+    for n in range(1,len(x)):
+        Y.append((y[n]-y[n-1])/(x[n]-x[n-1]))
+        Yerr.append(Y[n-1]*np.sqrt(((xerr[n]**2+xerr[n-1]**2)/(x[n]-x[n-1])**2)+((yerr[n]**2+yerr[n-1]**2)/(y[n]-y[n-1])**2)))
+    print(len(Y)==len(y)-1)
+
+    return X,Y,Xerr,Yerr
+
+
+def calculateStoppingPower(folderName):
+    # constants
+    Distance = (89.530 - 15.810 - (13.890-9.380))*100.0
+    Distance_e = ((4.0 * (0.005 ** 2.0)) ** 0.5) * 100.0
+    pressure_e = 10.0  # in [mbar]
+    prefactor = 1/(Distance) # such that the spotting power is just - prefactor * thickness * energy/thickness local derivative :)
+    prefactor_e = Distance_e/(Distance)**2
+
+    #summon the thickness versus energy data (properly ordered)
+    m_press, m_press_e, b_press, b_press_e, Energy, Energy_e, Thickness, Thickness_e = pressureData('PressureWBias_1')
+
+    # take the slopes of adjacent points to create a "local derivative" dataset
+    x, y, xerr, yerr = locallyDifferentiate(Thickness, Energy, Thickness_e, Energy_e)
+
+    #suggestively relabel
+    t = np.asarray(x)
+    dEdt = np.asarray(y)
+
+    t_err = np.asarray(xerr)
+    dEdt_err = np.asarray(yerr)
+
+    #calculate the stopping power :DDD
+    S = [-prefactor*t[n]*dEdt[n] for n in range(len(t))]
+    #propagate the error
+    Serr = [S[n]*np.sqrt((t_err[n]/t[n])**2+(prefactor_e/prefactor)**2+(dEdt_err[n]/dEdt[n])**2) for n in range(len(t))]
+
+    # plot away
+    fig = plt.figure(figsize=(8, 6))
+    plt.errorbar(t, S, yerr=Serr, fmt='+', elinewidth=1, capsize=2, ecolor='b', label='Data', linestyle='None', markersize=4, color='b')
+    plt.xlabel('Thickness (kg/cm^2)')
+    plt.ylabel('Stopping Power (MeV/cm)')
+
+
+
 ########################### Fit bismuth activity data in order to extract lead and bismuth half-lives ##########################
 
 def activityFitFunc(x, lambda1, lambda2, N0, N1):
@@ -864,14 +937,32 @@ def calculateBranchRatio(Params,ParamErrs):
     print("Errors on ratios: "+str(bErr))
 
 
-    
+
 ######################## Function Calling Area ##################################
     
 #m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
-m_press, m_press_e, b_press, b_press_e, Energy, Energy_e, Thickness, Thickness_e = pressureData('PressureWBias_1')
+#m_press, m_press_e, b_press, b_press_e, Energy, Energy_e, Thickness, Thickness_e = pressureData('PressureWBias_1')
 
+calculateStoppingPower('PressureWBias_1')
 
-#popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
+#print(Energy)
+#print(Thickness)
+
+#x, y, xerr, yerr = locallyDifferentiate(Thickness,Energy,Thickness_e, Energy_e)
+
+#x = np.asarray(x)
+#y = np.asarray(y)
+
+#print(y)
+#print(x)
+
+#xerr = np.asarray(xerr)
+#yerr = np.asarray(yerr)
+
+#fig = plt.figure(figsize=(8,6))
+#plt.errorbar(x, -y, yerr=yerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \label='Data', linestyle='None', markersize=4,color='b')
+
+#popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
 #                         [100, 2.5, 2, 20, 785, 2.5, 1.8, 30, 1750, 2, 1.6, 40], left=40, right=20, res_tick=[-2,0,2])
 #popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
 #                         [8, 20, 60, 30, 310, 40, 3], left=50, right=20, res_tick=[-2,0,2], sigmaFixed=True)
@@ -881,9 +972,9 @@ m_press, m_press_e, b_press, b_press_e, Energy, Energy_e, Thickness, Thickness_e
 #halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
 
 
-Values = branchingRatio_FourPeaks('Decay_3')[0]
-Errs = branchingRatio_FourPeaks('Decay_3')[1]
-calculateBranchRatio(Values,Errs)
+#Values = branchingRatio_FourPeaks('Decay_3')[0]
+#Errs = branchingRatio_FourPeaks('Decay_3')[1]
+#calculateBranchRatio(Values,Errs)
 #branchingRatio_Largest('Decay_3')
 
 
@@ -919,29 +1010,5 @@ calculateBranchRatio(Values,Errs)
 ########################## Fit energy histogram to extract peak energy of the alpha particle ################################
 ########################### Determine stopping power as a function of distance ###############################################
 
-def locallyDifferentiate(x,y,xerr,yerr):
-    """
-    :param x: x data vector
-    :param y: y data vector
-    :param xerr: vector of error on x data
-    :param yerr: vector of error on y data
-    :return: (X,Y) are the local derivative of the (x,y) data set. Ie for each adjacent data points in the input data set, a straight line is drawn between them
-    and the slope of the line is added to the vector Y. The vector X is compromised of the midpoints between the adjacent x's. The errors on X,Y are computed in terms
-     of xerr and yerr
-    """
-    X=[]
-    Xerr=[]
-    for n in len(x):
-        X.append((x[n+1]+x[n])/2)
-        Xerr.append((xerr[n+1]+xerr[n])/2)
-    print(len(X))
-    Y=[]
-    Yerr=[]
-    for n in len(x):
-        Y.append((y[n+1]-y[n])/(x[n+1]-x[n]))
-        Yerr.append(Y[n]*np.sqrt(((xerr[n+1]**2+xerr[n]**2)/(x[n+1]-x[n])**2)+((yerr[n+1]**2+yerr[n]**2)/(y[n+1]-y[n])**2)))
-    print(len(Y))
-
-    return X,Y,Xerr,Yerr
 
 
