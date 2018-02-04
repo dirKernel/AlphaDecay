@@ -56,7 +56,7 @@ def plotStudRes(ax, d, xx , yerr, res_tick, x0=0, left=0):
     ax2.axhline(y=0, color='r', linestyle='-', linewidth=2)
     ax.tick_params(axis='both', direction='in')
     ax2.tick_params(axis='both', direction='in')
-    ax2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='+', elinewidth=1.5 ,capsize=3, ecolor='b', \
+    ax2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
                  label='Data', linestyle='None', markersize=3 ,color='k')
 
 def reducedChiSquare(y,fx,yerr, npara):
@@ -148,12 +148,15 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     popt, pcov = curve_fit(expGaussMul, x, y, p0=p0, maxfev=5000000)
     npara = len(p0)
     rchi, dof = reducedChiSquare(y, expGaussMul(x, *popt), yerr, npara)
-    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='+', elinewidth=1.5 ,capsize=3, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5 ,color='k')
-    plt.plot(x+x0-left, expGaussMul(x, *popt), '-r', label='Fit', linewidth=2)
+    xx = convertChannelToEnergy(x)
+    x0 = convertChannelToEnergy(x0)
+    left = convertChannelToEnergy(left)
+    plt.errorbar(xx+x0-left, y, yerr=yerr,fmt='o', elinewidth=1 ,capsize=3, ecolor='b', \
+                 label='Data', linestyle='None', markersize=2 ,color='k')
+    plt.plot(xx+x0-left, expGaussMul(x, *popt), '-r', label='Fit', linewidth=2)
     plt.legend(loc=2)
-    plt.xlabel('MCA Channel Number')
-    plt.ylabel('Counts')
+    plt.xlabel('Energy (MeV)')
+    plt.ylabel(r'$^{212}$Bi Decay to $^{208}$Tl'+'\nChannel Counts')
     plt.ylim((-100,3400))
     perr = np.sqrt(np.diag(pcov))
     
@@ -168,17 +171,16 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     # Plot residuals
     d = y-expGaussMul(x,*popt)
     axes = plt.gca()
-    plotStudRes(axes, d, x, yerr, res_tick=res_tick, x0=x0, left=left)
+    plotStudRes(axes, d, xx, yerr, res_tick=res_tick, x0=x0, left=left)
     
-    print(popt)
     ax = fig.add_subplot(111)
-    ax.annotate('#1', xy=(popt[3]-2, 200), xytext=(popt[3]-2, 200+400),\
+    ax.annotate('#1', xy=(convertChannelToEnergy(popt[3]-2), 200), xytext=(convertChannelToEnergy(popt[3]-2), 200+400),\
             arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
-    ax.annotate('#2', xy=(popt[7]-2, 200), xytext=(popt[7]-2, 200+400),\
+    ax.annotate('#2', xy=(convertChannelToEnergy(popt[7]-2), 200), xytext=(convertChannelToEnergy(popt[7]-2), 200+400),\
             arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
-    ax.annotate('#3', xy=(popt[11]-2, 2700), xytext=(popt[11]-2, 2700+400),\
+    ax.annotate('#3', xy=(convertChannelToEnergy(popt[11]-2), 2700), xytext=(convertChannelToEnergy(popt[11]-2), 2700+400),\
             arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
-    ax.annotate('#4', xy=(popt[15]-1, 1200), xytext=(popt[15]-1, 1200+400),\
+    ax.annotate('#4', xy=(convertChannelToEnergy(popt[15]-1), 1200), xytext=(convertChannelToEnergy(popt[15]-1), 1200+400),\
             arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
 
     plt.show()
@@ -195,7 +197,7 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
                  label='Data', linestyle='None', markersize=3 ,color='k')
     plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
     plt.xlabel('Energy (MeV)')
-    plt.ylabel('Counts')
+    plt.ylabel(r'$\alpha$-decay Channel Counts')
     perr = np.sqrt(np.diag(pcov))
     print('\nMean 1 (Scaled): %f $\pm$ %f'%(popt[3], perr[3]))
     print('Sigma 1: %f $\pm$ %f'%(popt[2], perr[2]))
@@ -589,7 +591,7 @@ def pressureData(folderName):
         
     for file in data:
         popt, perr, rchi, dof = fitAlphaPeak(outPath+'/'+file, folderName+'/'+file, p0=[60, 1, 0.7, 10],\
-                                          right=80, filenm=file)
+                                          left=50, right=30, filenm=file)
         peak_means.append(popt[3])
         peak_means_e.append(perr[3])
         
@@ -738,15 +740,15 @@ def activityFit(filePathtobeSaved, x, y, yerr, guess):
     perr = np.sqrt(np.diag(pcov))
     npara = 4
     rchi, dof = reducedChiSquare(y, activityFitFunc(x, *popt), yerr, npara)
-    plt.errorbar(x, y, yerr=yerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=4,color='b')
+    plt.errorbar(x, y, yerr=yerr, fmt='o', elinewidth=1.5 ,capsize=4, ecolor='b', \
+                 label='Data', linestyle='None', markersize=3,color='k')
     xx = np.linspace(min(x), max(x))
-    plt.plot(xx, activityFitFunc(xx, *popt), '-r', label='Fit')
-    plt.legend()
-    plt.ylabel('Activity ($s^{-1}$)')
+    plt.plot(xx, activityFitFunc(xx, *popt), '-r', label='Fit', linewidth=2)
+#    plt.legend()
+    plt.ylabel('$^{212}$Bi Activity (count/s)')
     plt.xlabel('Time (s)')
     print('lambda1: %f \pm %f'%(popt[0], perr[0]))
-    print('lambda2: %f \pm %f'%(popt[1], perr[1]))
+    print('lambda2: %.9f \pm %.9f'%(popt[1], perr[1]))
     print('N0: %f \pm %f'%(popt[2], perr[2]))
     print('N1: %f \pm %f'%(popt[3], perr[3]))
     print('RChi: %f'%(rchi))
@@ -796,7 +798,7 @@ def halflifeMeasurement(outFileName, folderName):
     return T1, T1_e, T2, T2_e
 
 def branchingRatio_FourPeaks(InFileName):
-    outFileName = 'Figures/BranchingRatio/'+InFileName 
+    outFileName = 'Figures/BranchingRatio/'+InFileName+'_FourPeaks'
     spectrum = chnsum(InFileName)
     left = 1200
 #    left = 1280
@@ -806,9 +808,9 @@ def branchingRatio_FourPeaks(InFileName):
     y = leftSpec
     yerr = np.sqrt(y)
     x = np.arange(left,right)
-    plt.plot(x,leftSpec)
+#    plt.plot(x,leftSpec)
     # Guess of fitting 5 peaks
-    p0 = [600, 0.1, 2.5, left+20, 600, 0.1, 1.5, left+50, 15000, 0.3, 1.5, left+115, 6000, 0.1, 1.5, left+125, 5000, 0.3, 1.3, left+105] # A, l, s, m
+    p0 = [500, 0.35, 2.5, left+20, 600, 0.35, 1.5, left+50, 15000, 0.3, 1.5, left+115, 6000, 0.3, 1.5, left+125, 5000, 0.3, 1.3, left+105] # A, l, s, m
     # Guess of fitting 4 peaks
 #    p0 = [700, 0.1, 2.5, left+20, 7000, 0.1, 1.5, left+50, 15000, 0.3, 1.5, left+115, 6000, 0.3, 1.5, left+125]
 #    p0 = [10000, 0.3, 1.3, left+35, 4000, 0.3, 1.3, left+45, 3000, 1, 1.3, left+15, 2000, 1, 1.3, left+25] # A, l, s, m
@@ -837,7 +839,7 @@ def branchingRatio_FourPeaks(InFileName):
     
     
 def branchingRatio_Largest(InFileName):
-    outFileName = 'Figures/BranchingRatio/'+InFileName 
+    outFileName = 'Figures/BranchingRatio/'+InFileName+'_Largest'
     spectrum = chnsum(InFileName)
     left = 1835
     right = 1852
@@ -1008,11 +1010,15 @@ def calculateBranchRatio(Params,ParamErrs):
 #                         [8, 50, 3, 60, 60, 3, 310, 70, 2], left=70, right=30, res_tick=[-2,0,2])
 
 #halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
+#halflifeMeasurement('OneHourCollectionTime', 'Decay_60_min_1')
+#halflifeMeasurement('TwentyMinCollectionTime', 'Decay_20_min_1')
 
 
 Values = branchingRatio_FourPeaks('Decay_3')[0]
 #Errs = branchingRatio_FourPeaks('Decay_3')[1]
 #calculateBranchRatio(Values,Errs)
+#branchingRatio_Largest('Decay_3')
+
 #branchingRatio_Largest('Decay_3')
 
 
