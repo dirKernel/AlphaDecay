@@ -607,10 +607,10 @@ def pressureData(folderName):
     #Using the names given in the notebook, the distance between the source and the
     #detector is Distance = L - length of detector - (length of source - bottom half of source)
     #I multiply by 100 to get the distance in centimeters
-    Distance = (89.530 - 15.810 - (13.890-9.380))*100.0
+    Distance = (89.530 - 15.810 - (13.890-9.380))/10.0
     #The error, since we simply add 4 values with 0.005 mm error, is given by the following
     #(once again, in cm)
-    Distance_e = ((4.0*(0.005**2.0))**0.5)*100.0
+    Distance_e = ((4.0*(0.005**2.0))**0.5)/10.0
     #Air density rho_air is (M_air*pressure)/(R*T)
     #The value and error of M_air are referenced in the .bib file
     M_air =  28.964 #in [g] [mol-1]
@@ -673,8 +673,8 @@ def locallyDifferentiate(x,y,xerr,yerr):
 
 def calculateStoppingPower(folderName):
     # constants
-    Distance = (89.530 - 15.810 - (13.890-9.380))*100.0
-    Distance_e = ((4.0 * (0.005 ** 2.0)) ** 0.5) * 100.0
+    Distance = (89.530 - 15.810 - (13.890-9.380))/10.0
+    Distance_e = ((4.0 * (0.005 ** 2.0)) ** 0.5) / 10.0
     pressure_e = 10.0  # in [mbar]
     prefactor = 1/(Distance) # such that the spotting power is just - prefactor * thickness * energy/thickness local derivative :)
     prefactor_e = Distance_e/(Distance)**2
