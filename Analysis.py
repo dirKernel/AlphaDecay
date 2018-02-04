@@ -587,7 +587,35 @@ def pressureData(folderName):
     plt.show()
     fig.savefig(outPath+'/StoppingPower.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
     
-    return m, m_e, b, b_e  
+    #Target thickness is (air density) * (distance b/w source and detector)
+    #Using the names given in the notebook, the distance between the source and the
+    #detector is Distance = L - length of detector - (length of source - bottom half of source)
+    #I multiply by 100 to get the distance in centimeters
+    Distance = (89.530 - 15.810 - (13.890-9.380))*100.0
+    #The error, since we simply add 4 values with 0.005 mm error, is given by the following
+    #(once again, in cm)
+    Distance_e = ((4.0*(0.005**2.0))**0.5)*100.0
+    #Air density rho_air is (M_air*pressure)/(R*T)
+    #M_air is a reference value
+    M_air =  28.964 #in [g] [mol-1]
+    M_air_e =  0.002 #in [g] [mol-1]
+    #R is 8.31, but need to find a better source. Assume error is 0.01
+    R = 83.14449*1000.0  #in [cm3] [mbar] [K−1] [mol−1]
+    R_e =  0.00056*1000.0 #in [cm3] [mbar] [K−1] [mol−1] 
+    #T was measured as multiple values between 21.0 and 22.6, so for now take 21.8
+    T = 21.8+273.16 #in [K]
+    T_e = 0.1 #in [K]
+    pressure_e = 10.0 #in [mbar]
+    #Thickness is defined as M_air*pressure*Distance/(R*T)
+    Thickness = []
+    Thickness_e = []
+    for i in range(len(pressure)):
+        Thickness.append( M_air*pressure[i]*Distance/(R*T) ) #in [g] [cm-2]
+        Thickness_e.append( ( (M_air_e * pressure[i]*Distance/(R*T))**2 + (pressure_e * M_air*Distance/(R*T))**2 + (Distance_e * M_air*pressure[i]/(R*T))**2 + (R_e * M_air*pressure[i]*Distance/(R*R*T))**2 + (T_e * M_air*pressure[i]*Distance/(R*T*T))**2 )**0.5 ) #in [g] [cm-2]
+    
+    
+    
+    return m, m_e, b, b_e, peak_means, peak_means_e, Thickness, Thickness_e  
     
 ########################### Fit bismuth activity data in order to extract lead and bismuth half-lives ##########################
 
@@ -840,7 +868,8 @@ def calculateBranchRatio(Params,ParamErrs):
 ######################## Function Calling Area ##################################
     
 #m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
-#m_press, m_press_e, b_press, b_press_e = pressureData('PressureWBias_1')
+m_press, m_press_e, b_press, b_press_e, Energy, Energy_e, Thickness, Thickness_e = pressureData('PressureWBias_1')
+
 
 #popt_am, perr_am, rchi_am, dof_am= fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
 #                         [100, 2.5, 2, 20, 785, 2.5, 1.8, 30, 1750, 2, 1.6, 40], left=40, right=20, res_tick=[-2,0,2])
