@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 mpl.rcParams['axes.linewidth'] = 1.5 #set the value globally
 mpl.rcParams.update({'font.size': 15})
+mpl.rcParams['axes.labelsize'] = 17
 from scipy.optimize import curve_fit
 from scipy.integrate import quad
 import scipy as sp
@@ -48,12 +49,15 @@ def plotStudRes(ax, d, xx , yerr, res_tick, x0=0, left=0):
     ax2.set_yticks(res_tick)
     ax.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True)
     ax2.tick_params(width=1.3, axis='both', direction='in', bottom=True, top=True, left=True, right=True, labelbottom=False)
-    ax2.set_ylabel('Studentized\nResidual', color='k')
-    ax2.axhline(y=0, color='r', linestyle='-')
+    ax2.set_ylabel('Studentized\nResiduals', color='k', fontsize=12)
+    from matplotlib.ticker import AutoLocator, AutoMinorLocator
+    ax2.get_yaxis().set_major_locator(AutoLocator())
+#    ax2.get_yaxis().set_minor_locator(AutoMinorLocator())
+    ax2.axhline(y=0, color='r', linestyle='-', linewidth=2)
     ax.tick_params(axis='both', direction='in')
     ax2.tick_params(axis='both', direction='in')
-    ax2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=4,color='b')
+    ax2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
+                 label='Data', linestyle='None', markersize=3.5 ,color='k')
 
 def reducedChiSquare(y,fx,yerr, npara):
     """
@@ -148,7 +152,7 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
                  label='Data', linestyle='None', markersize=4,color='b')
     plt.plot(x+x0-left, expGaussMul(x, *popt), '-r', label='Fit')
     plt.legend()
-    plt.xlabel('Channels')
+    plt.xlabel('MCA Channel Number')
     plt.ylabel('Counts')
     perr = np.sqrt(np.diag(pcov))
     
@@ -175,8 +179,8 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     popt, pcov = curve_fit(expGauss, x, y, p0=p0, maxfev=50000)
     npara = len(p0)
     rchi, dof = reducedChiSquare(y, expGauss(x, *popt), yerr, npara)
-    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=4,color='b')
+    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
+                 label='Data', linestyle='None', markersize=3.5 ,color='k')
     plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
     plt.xlabel('Energy (MeV)')
     plt.ylabel('Counts')
@@ -199,7 +203,7 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     return popt, perr, rchi, dof # return the mean channel values  
 
 def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right=15, res_tick=[-3,0,3]):
-    fig = plt.figure(figsize=[6,3.5])
+    fig = plt.figure(figsize=[8,6])
     ind = np.argmax(y) #to get the peak value x-coord
     x0 = x[ind] #x0 is the peak value x-coord (channel number)
     yy = y[x0-left:x0+right]
@@ -209,13 +213,15 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right
     npara = len(p0)
     rchi, dof = reducedChiSquare(yy, gauss(xx, *popt), yerr, npara)
     perr = np.sqrt(np.diag(pcov))
-    plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=4,color='b')
+    plt.errorbar(xx+x0-left, yy, yerr=yerr, fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
+                 label='Data', linestyle='None', markersize=3.5 ,color='k') 
+#    fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+#                 label='Data', linestyle='None', markersize=4,color='b'
+                 
     xxx = np.linspace(min(xx),max(xx),1000)
-    plt.plot(xxx+x0-left, gauss(xxx, *popt), 'r-', label='Fit')
-    plt.legend()
-    plt.xlabel('Channels')
-    plt.ylabel('Counts')
+    plt.plot(xxx+x0-left, gauss(xxx, *popt), 'r-', label='Fit', linewidth=2)
+    plt.xlabel('MCA Channel Number')
+    plt.ylabel('Pulse Channel Counts')
             
     # Plot residuals
     d = yy-gauss(xx,*popt)
@@ -247,13 +253,13 @@ def gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left=15, right=15, res_tic
     npara = len(p0)/3
     rchi, dof = reducedChiSquare(yy, gaussMul(xx, *popt), yerr, npara)
     perr = np.sqrt(np.diag(pcov))
-    plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=4,color='b')
+    plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
+                 label='Data', linestyle='None', markersize=3.5 ,color='k')
     xxx = np.linspace(min(xx),max(xx),1000)
-    plt.plot(xxx+x0-left, gaussMul(xxx, *popt), 'r-', label='Fit', linewidth=1.5)
-    plt.legend()
-    plt.xlabel('Channels')
-    plt.ylabel('Counts')
+    plt.plot(xxx+x0-left, gaussMul(xxx, *popt), 'r-', label='Fit', linewidth=2)
+    #plt.legend()
+    plt.xlabel('MCA Channel Number')
+    plt.ylabel('Alpha Deacay Channel Counts')
     
     # Plot residuals
     d = yy-gaussMul(xx,*popt)
@@ -464,9 +470,9 @@ def calibratePulses(folderName):
     #########################################
     
     filePathtobeSaved = 'Figures/Calibration/pulseLinear'
-    fig = plt.figure(figsize=[8,6])
-    plt.errorbar(x, y, yerr=yerr, xerr=xerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=4,color='b')
+    fig = plt.figure(figsize=(8,6))
+    plt.errorbar(x, y, yerr=yerr, xerr=xerr, fmt='o', elinewidth=1.5 ,capsize=4.5, ecolor='b', \
+                 label='Data', linestyle='None', markersize=3.5 ,color='k')
 
     popt, perr = LinearFit_xIntercept(x, y, yerr)
 
@@ -481,10 +487,10 @@ def calibratePulses(folderName):
     yerr = np.asarray(yerr) 
     rchi, dof = reducedChiSquare(y, m*x-m*h*np.ones(len(x)), yerr, npara)
     xx = np.linspace(0, max(x))
-    plt.plot(xx, m*xx-m*h*np.ones(len(xx)), color='r', label='Fit')
+    plt.plot(xx, m*xx-m*h*np.ones(len(xx)), color='r', label='Fit', linewidth=2)
 
-    plt.xlabel('Mean Channel')
-    plt.ylabel('Voltage (V)')
+    plt.xlabel('Mean MCA Channel Number')
+    plt.ylabel('Pulser Voltage (V)')
     print('x-intercept: %f $\pm$ %f'%(h,h_e))
     print('Slope: %f $\pm$ %f'%(m,m_e))
     plt.legend()
@@ -497,8 +503,8 @@ def calibratePulses(folderName):
     func = func.replace('b','('+str(int(round(popt[1],0)))+'$\pm$'+str(int(round(perr[1],0)))+')')
     func = func.replace('slope','('+str(round(popt[0],5))+'$\pm$'+str(round(perr[0],5))+')')
     
-    textstr = '$\chi^2$=%.2f\tDOF=%d\t%s'%(rchi, dof, func)
-    plt.text(0.1, 0.9, textstr, fontsize=10, transform=plt.gcf().transFigure)
+#    textstr = '$\chi^2$=%.2f\tDOF=%d\t%s'%(rchi, dof, func)
+#    plt.text(0.1, 0.9, textstr, fontsize=10, transform=plt.gcf().transFigure)
     
     plt.show()
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
@@ -696,10 +702,10 @@ def calculateStoppingPower(folderName):
     S = [-prefactor*t[n]*dEdt[n] for n in range(len(t))]
     #propagate the error
     Serr = [S[n]*np.sqrt((t_err[n]/t[n])**2+(prefactor_e/prefactor)**2+(dEdt_err[n]/dEdt[n])**2) for n in range(len(t))]
-
+    
     # plot away
     fig = plt.figure(figsize=(8, 6))
-    plt.errorbar(t, S, yerr=Serr, fmt='+', elinewidth=1, capsize=2, ecolor='b', label='Data', linestyle='None', markersize=4, color='b')
+    plt.errorbar(t, S, yerr=Serr, xerr=t_err, fmt='+', elinewidth=1, capsize=2, ecolor='b', label='Data', linestyle='None', markersize=4, color='b')
     plt.xlabel('Thickness (kg/cm^2)')
     plt.ylabel('Stopping Power (MeV/cm)')
 
@@ -958,10 +964,10 @@ def calculateBranchRatio(Params,ParamErrs):
 ############################################## Function Calling Area ###############################################
 ####################################################################################################################
     
-#m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
+m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
 #m_press, m_press_e, b_press, b_press_e, Energy, Energy_e, Thickness, Thickness_e = pressureData('PressureWBias_1')
 
-calculateStoppingPower('PressureWBias_1')
+#calculateStoppingPower('PressureWBias_1')
 
 #print(Energy)
 #print(Thickness)
