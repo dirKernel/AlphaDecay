@@ -459,8 +459,8 @@ def calibratePulses(folderName):
     print(yerr)
 
     ###############For latex#################
-    for i in range(len(vol)):
-        print('%d & $%.2f\pm%.2f$ & $%.2f\pm0.04$ & $%.2f$ \\\\'%(i+1, y[i], yerr[i], x[i], rchi[i]))
+    #for i in range(len(vol)):
+    #    print('%d & $%.2f\pm%.2f$ & $%.2f\pm0.04$ & $%.2f$ \\\\'%(i+1, y[i], yerr[i], x[i], rchi[i]))
     #########################################
     
     filePathtobeSaved = 'Figures/Calibration/pulseLinear'
@@ -847,12 +847,12 @@ def branchingRatio_Largest(InFileName):
         valueToReturn[i] = popt[4*i:4*i+4]
         errToReturn[i] = perr[4*i:4*i+4]
         print(popt[4*i:4*i+4])
-    print(valueToReturn)
-    print(errToReturn)
-    valueToReturn[0], valueToReturn[1] = valueToReturn[1], valueToReturn[0]
-    errToReturn[0], errToReturn[1] = errToReturn[1], errToReturn[0]
-    print(valueToReturn)
-    print(errToReturn)
+#    print(valueToReturn)
+#    print(errToReturn)
+#    valueToReturn[0], valueToReturn[1] = valueToReturn[1], valueToReturn[0]
+#    errToReturn[0], errToReturn[1] = errToReturn[1], errToReturn[0]
+#    print(valueToReturn)
+#    print(errToReturn)
     
     return valueToReturn, errToReturn
 
