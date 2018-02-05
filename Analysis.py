@@ -448,7 +448,6 @@ def convertChannelToEnergy(channelData, err=None):
 
 
 
-
 def calibratePulses(folderName):
     mean, sigma, mean_e, vol, vol_e, rchi = [], [], [], [], [], []
     data = os.listdir(folderName)
@@ -1008,7 +1007,6 @@ def calculateBranchRatio(Params,ParamErrs):
     print(sum(B))
     print("Branching ratios: "+str(B))
     print("Errors on ratios: "+str(bErr))
-
 
 ####################################################################################################################
 ############################################## Function Calling Area ###############################################
