@@ -803,7 +803,7 @@ def halflifeMeasurement(outFileName, folderName):
     return T1, T1_e, T2, T2_e
 
 def branchingRatio_FourPeaks(InFileName):
-    outFileName = 'Figures/BranchingRatio/'+InFileName 
+    outFileName = 'Figures/BranchingRatio/'+InFileName+'_FourPeaks'
     spectrum = chnsum(InFileName)
     left = 1200
 #    left = 1280
@@ -846,7 +846,7 @@ def branchingRatio_FourPeaks(InFileName):
     
     
 def branchingRatio_Largest(InFileName):
-    outFileName = 'Figures/BranchingRatio/'+InFileName 
+    outFileName = 'Figures/BranchingRatio/'+InFileName+'_Largest' 
     spectrum = chnsum(InFileName)
     left = 1830
     right = 1852
