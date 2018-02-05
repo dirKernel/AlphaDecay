@@ -28,6 +28,27 @@ global intercept #intercept on energy versus channel number
 global interceptErr
 global TOTAL
 global TOTALErr
+global M_air
+global M_air_e
+global R
+global R_e
+global T
+global T_e
+
+slope = 0.00457880799792
+slopeErr = 3.35945387177e-06
+intercept = 0.0661289090633
+interceptErr = 0.00397196078318
+#The value and error of M_air are referenced in the .bib file
+M_air =  28.964 #in [g] [mol-1]
+M_air_e =  0.002 #in [g] [mol-1]
+#The value and error of R are referenced in the .bib file
+R = 83.14449*1000.0  #in [cm3] [mbar] [K−1] [mol−1]
+R_e =  0.00056*1000.0 #in [cm3] [mbar] [K−1] [mol−1] 
+#T was measured as multiple values between 21.0 and 22.6, so for now take 21.8
+T = 21.8+273.16 #in [K]
+T_e = 0.1 #in [K]
+
 
 slope = 0.00457880799792
 slopeErr = 3.35945387177e-06
@@ -597,36 +618,6 @@ def pressureData(folderName):
                                           right=80, filenm=file)
         peak_means.append(popt[3])
         peak_means_e.append(perr[3])
-        
-    fig = plt.figure(figsize=(8,6))
-    x = pressure
-    y = peak_means
-    yerr = peak_means_e
-    popt, perr = linearFit(x, y, yerr)
-    m = popt[0]
-    b = popt[1]
-    m_e = perr[0]
-    b_e = perr[1]
-    xx = np.linspace(min(x), max(x))
-    plt.plot(xx, m*xx+b*np.ones(len(xx)),label='Fit', color='r')
-    plt.errorbar(x, y, yerr=yerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=4,color='b')
-    npara = 2
-    rchi, dof = reducedChiSquare(y, m*x+b*np.ones(len(x)), yerr, npara)
-    plt.xlabel('Pressure (mBar)')
-    plt.ylabel('Energy (MeV)')
-    
-    d = y-(m*x+b*np.ones(len(x)))
-    axes = plt.gca()
-    plotStudRes(axes, d, x, yerr, res_tick=[-5,0,5])
-    
-    print('\nIntercept: %f $\pm$ %f'%(b,b_e))
-    print('Slope: %f $\pm$ %f'%(m,m_e))
-    print('r-chi-square: %.2f'%rchi)
-    print('DOF: %d'%dof)
-    
-    plt.show()
-    fig.savefig(outPath+'/StoppingPower.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
     
     #Target thickness is (air density) * (distance b/w source and detector)
     #Using the names given in the notebook, the distance between the source and the
@@ -637,15 +628,7 @@ def pressureData(folderName):
     #(once again, in cm)
     Distance_e = ((4.0*(0.005**2.0))**0.5)/10.0
     #Air density rho_air is (M_air*pressure)/(R*T)
-    #The value and error of M_air are referenced in the .bib file
-    M_air =  28.964 #in [g] [mol-1]
-    M_air_e =  0.002 #in [g] [mol-1]
-    #The value and error of R are referenced in the .bib file
-    R = 83.14449*1000.0  #in [cm3] [mbar] [K−1] [mol−1]
-    R_e =  0.00056*1000.0 #in [cm3] [mbar] [K−1] [mol−1] 
-    #T was measured as multiple values between 21.0 and 22.6, so for now take 21.8
-    T = 21.8+273.16 #in [K]
-    T_e = 0.1 #in [K]
+    #The values of M_air, T, R, are defined at the beginning of this file
     pressure_e = 10.0 #in [mbar]
     #Thickness is defined as M_air*pressure*Distance/(R*T)
     Thickness = []
@@ -653,6 +636,44 @@ def pressureData(folderName):
     for i in range(len(pressure)):
         Thickness.append( M_air*pressure[i]*Distance/(R*T) ) #in [g] [cm-2]
         Thickness_e.append( ( (M_air_e * pressure[i]*Distance/(R*T))**2 + (pressure_e * M_air*Distance/(R*T))**2 + (Distance_e * M_air*pressure[i]/(R*T))**2 + (R_e * M_air*pressure[i]*Distance/(R*R*T))**2 + (T_e * M_air*pressure[i]*Distance/(R*T*T))**2 )**0.5 ) #in [g] [cm-2]
+    
+
+
+    
+    fig = plt.figure(figsize=(8,6))
+#    x = pressure
+    x = Thickness
+    y = peak_means
+    yerr = peak_means_e
+    popt, perr = linearFit(x, y, yerr)
+    m = popt[0]
+    b = popt[1]
+    m_e = perr[0]
+    b_e = perr[1]
+#    xx = np.linspace(min(x), max(x))
+#    plt.plot(xx, m*xx+b*np.ones(len(xx)),label='Fit', color='r')
+    plt.errorbar(x, y, yerr=yerr, fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
+                 label='Data', linestyle='None', markersize=3,color='k')
+#    npara = 2
+#    rchi, dof = reducedChiSquare(y, m*x+b*np.ones(len(x)), yerr, npara)
+#    plt.xlabel('Pressure (mBar)')
+    plt.xlabel(r'Thickness (g$\cdot$cm$^{-2}$)')
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
+    plt.ylabel('Energy (MeV)')
+    
+#    d = y-(m*x+b*np.ones(len(x)))
+#    axes = plt.gca()
+#    plotStudRes(axes, d, x, yerr, res_tick=[-5,0,5])
+    
+#    print('\nIntercept: %f $\pm$ %f'%(b,b_e))
+#    print('Slope: %f $\pm$ %f'%(m,m_e))
+#    print('r-chi-square: %.2f'%rchi)
+#    print('DOF: %d'%dof)
+    
+    plt.show()
+#    fig.savefig(outPath+'/EnergyVsPressure.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
+    fig.savefig(outPath+'/EnergyVsThickness.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
+
     
 
     ## Reshuffle data to be in order of increasing thickness
@@ -684,7 +705,7 @@ def locallyDifferentiate(x,y,xerr,yerr):
     X=[]
     Xerr=[]
     for n in range(1,len(x)):
-        X.append((x[n]+x[n-1])/2)
+        X.append(np.sqrt(x[n]**2+x[n-1]**2)/2)
         Xerr.append((xerr[n]+xerr[n-1])/2)
     print(len(X))
     Y=[]
@@ -724,11 +745,14 @@ def calculateStoppingPower(folderName):
     
     # plot away
     fig = plt.figure(figsize=(8, 6))
-    plt.errorbar(t, S, yerr=Serr, xerr=t_err, fmt='+', elinewidth=1, capsize=2, ecolor='b', label='Data', linestyle='None', markersize=4, color='b')
-
+    plt.errorbar(t, S, yerr=Serr, xerr=t_err, fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
+                 label='Data', linestyle='None', markersize=3,color='k')
     plt.xlabel(r'Thickness (g$\cdot$cm$^{-2}$)')
-#    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
     plt.ylabel('Stopping Power (MeV/cm)')
+    fig.savefig('Figures/Pressure/StoppingPower.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
+    
+
 
 
 ####################################################################################################################
@@ -1044,7 +1068,7 @@ def BindingEnergyEstimate(A,Z):
 #m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
 #m_press, m_press_e, b_press, b_press_e, Energy, Energy_e, Thickness, Thickness_e = pressureData('PressureWBias_1')
 
-#calculateStoppingPower('PressureWBias_1')
+calculateStoppingPower('PressureWBias_1')
 
 
 #popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
@@ -1062,7 +1086,7 @@ def BindingEnergyEstimate(A,Z):
 #Errs = branchingRatio_FourPeaks('Decay_3')[1]
 #calculateBranchRatio(Values,Errs)
 #branchingRatio_Largest('Decay_3')
-print("Order of magnitude estimate for 212Bi->208Tl is {} MeV, and for 212Po->208Pb it is {} MeV".format(BindingEnergyEstimate(212,83),BindingEnergyEstimate(212,84)))
+#print("Order of magnitude estimate for 212Bi->208Tl is {} MeV, and for 212Po->208Pb it is {} MeV".format(BindingEnergyEstimate(212,83),BindingEnergyEstimate(212,84)))
 
 
 ############### For Vincent to have fun with ####################################
