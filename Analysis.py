@@ -26,6 +26,8 @@ global slope #slope on energy versus channel number
 global slopeErr
 global intercept #intercept on energy versus channel number
 global interceptErr
+global TOTAL
+global TOTALErr
 
 slope = 0.00457880799792
 slopeErr = 3.35945387177e-06
@@ -991,9 +993,12 @@ def calculateBranchRatio(Params,ParamErrs):
     print(b)
     print(bErr)
 
-    totalArea = sum(b)
-    totalAreaErr = np.sqrt(sum([bErr[n]**2 for n in range(4)]))
 
+    totalArea = sum(b)
+    TOTAL = totalArea
+
+    totalAreaErr = np.sqrt(sum([bErr[n]**2 for n in range(4)]))
+    TOTALErr = totalAreaErr
 
 
     B = np.multiply((1 / totalArea), b)
