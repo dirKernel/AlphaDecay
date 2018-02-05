@@ -1020,6 +1020,24 @@ def calculateBranchRatio(Params,ParamErrs):
     print("Errors on ratios: "+str(bErr))
 
 ####################################################################################################################
+####################################### Binding energy estimate ####################################################
+####################################################################################################################
+
+
+def BFunc(A,Z):
+    a_v = 15.5 #All in MeV
+    a_s = 16.8
+    a_c = 0.72
+    a_sym = 23.0
+    a_p = 34.0
+    return (a_v*A)-(a_s*(A**(2.0/3.0)))-(a_c*Z*(Z-1)*(A**(-1.0/3.0)))-(a_sym*((A-2*Z)**2)/A)+(a_p*A**(-3.0/4.0))
+
+def BindingEnergyEstimate(A,Z):
+    return BFunc(A-4,Z-2)+BFunc(4,2)-BFunc(A,Z)
+    
+
+
+####################################################################################################################
 ############################################## Function Calling Area ###############################################
 ####################################################################################################################
     
@@ -1043,7 +1061,8 @@ def calculateBranchRatio(Params,ParamErrs):
 #Values = branchingRatio_FourPeaks('Decay_3')[0]
 #Errs = branchingRatio_FourPeaks('Decay_3')[1]
 #calculateBranchRatio(Values,Errs)
-branchingRatio_Largest('Decay_3')
+#branchingRatio_Largest('Decay_3')
+print("Order of magnitude estimate for 212Bi->208Tl is {} MeV, and for 212Po->208Pb it is {} MeV.".format(BindingEnergyEstimate(212,83),BindingEnergyEstimate(212,84)))
 
 
 ############### For Vincent to have fun with ####################################
