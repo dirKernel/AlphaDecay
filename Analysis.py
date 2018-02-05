@@ -26,26 +26,13 @@ global slope #slope on energy versus channel number
 global slopeErr
 global intercept #intercept on energy versus channel number
 global interceptErr
-global M_air
-global M_air_e
-global R
-global R_e
-global T
-global T_e
+global TOTAL
+global TOTALErr
 
 slope = 0.00457880799792
 slopeErr = 3.35945387177e-06
 intercept = 0.0661289090633
 interceptErr = 0.00397196078318
-#The value and error of M_air are referenced in the .bib file
-M_air =  28.964 #in [g] [mol-1]
-M_air_e =  0.002 #in [g] [mol-1]
-#The value and error of R are referenced in the .bib file
-R = 83.14449*1000.0  #in [cm3] [mbar] [K−1] [mol−1]
-R_e =  0.00056*1000.0 #in [cm3] [mbar] [K−1] [mol−1] 
-#T was measured as multiple values between 21.0 and 22.6, so for now take 21.8
-T = 21.8+273.16 #in [K]
-T_e = 0.1 #in [K]
 
 #E0 = 5.48556
 #E0Err = 0.00012
@@ -71,7 +58,7 @@ def plotStudRes(ax, d, xx , yerr, res_tick, x0=0, left=0):
     ax2.axhline(y=0, color='r', linestyle='-', linewidth=2)
     ax.tick_params(axis='both', direction='in')
     ax2.tick_params(axis='both', direction='in')
-    ax2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
+    ax2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='+', elinewidth=1.5 ,capsize=3, ecolor='b', \
                  label='Data', linestyle='None', markersize=3 ,color='k')
 
 def reducedChiSquare(y,fx,yerr, npara):
@@ -163,6 +150,7 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     popt, pcov = curve_fit(expGaussMul, x, y, p0=p0, maxfev=5000000)
     npara = len(p0)
     rchi, dof = reducedChiSquare(y, expGaussMul(x, *popt), yerr, npara)
+<<<<<<< HEAD
     xx, xx_e = convertChannelToEnergy(x)
     x0, x0_e = convertChannelToEnergy(x0)
     left, l_e = convertChannelToEnergy(left)
@@ -173,6 +161,15 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     plt.xlabel('Energy (MeV)')
     plt.ylabel(r'$^{212}$Bi Decay to $^{208}$Tl'+'\nChannel Counts')
 #    plt.ylim((-100,3400))
+=======
+    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='+', elinewidth=1.5 ,capsize=3, ecolor='b', \
+                 label='Data', linestyle='None', markersize=5 ,color='k')
+    plt.plot(x+x0-left, expGaussMul(x, *popt), '-r', label='Fit', linewidth=2)
+    plt.legend(loc=2)
+    plt.xlabel('MCA Channel Number')
+    plt.ylabel('Counts')
+    plt.ylim((-100,3400))
+>>>>>>> 35f3570c4e8f42ba3e109716721c33d48f1fd7c7
     perr = np.sqrt(np.diag(pcov))
     
     for i in range(0,len(popt),4):
@@ -186,8 +183,9 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     # Plot residuals
     d = y-expGaussMul(x,*popt)
     axes = plt.gca()
-    plotStudRes(axes, d, xx, yerr, res_tick=res_tick, x0=x0, left=left)
+    plotStudRes(axes, d, x, yerr, res_tick=res_tick, x0=x0, left=left)
     
+<<<<<<< HEAD
 #    ax = fig.add_subplot(111)
 #    ax.annotate('#1', xy=(convertChannelToEnergy(popt[3]-2, noErr=True), 200), xytext=(convertChannelToEnergy(popt[3]-2, noErr=True), 200+400),\
 #            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
@@ -197,6 +195,18 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
 #            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
 #    ax.annotate('#4', xy=(convertChannelToEnergy(popt[15]-1, noErr=True), 1200), xytext=(convertChannelToEnergy(popt[15]-1, noErr=True), 1200+400),\
 #            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
+=======
+    print(popt)
+    ax = fig.add_subplot(111)
+    ax.annotate('#1', xy=(popt[3]-2, 200), xytext=(popt[3]-2, 200+400),\
+            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
+    ax.annotate('#2', xy=(popt[7]-2, 200), xytext=(popt[7]-2, 200+400),\
+            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
+    ax.annotate('#3', xy=(popt[11]-2, 2700), xytext=(popt[11]-2, 2700+400),\
+            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
+    ax.annotate('#4', xy=(popt[15]-1, 1200), xytext=(popt[15]-1, 1200+400),\
+            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
+>>>>>>> 35f3570c4e8f42ba3e109716721c33d48f1fd7c7
 
     plt.show()
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
@@ -212,7 +222,7 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3], 
                  label='Data', linestyle='None', markersize=3 ,color='k')
     plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
     plt.xlabel('Energy (MeV)')
-    plt.ylabel(r'$\alpha$-decay Channel Counts')
+    plt.ylabel('Counts')
     perr = np.sqrt(np.diag(pcov))
     print('\nMean 1 (Scaled): %f $\pm$ %f'%(popt[3], perr[3]))
     print('Sigma 1: %f $\pm$ %f'%(popt[2], perr[2]))
@@ -458,8 +468,13 @@ def convertChannelToEnergy(channelData, err=0, noErr=False):
     m_e = slopeErr
     b_e = interceptErr
     energyData = m*channelData + b
+<<<<<<< HEAD
     errProp = np.sqrt((m*err)**2+(m_e*channelData)**2+b_e**2)
     if not noErr:
+=======
+    if err != None:
+        errProp = [np.sqrt((m*err[n])**2+interceptErr**2+(channelData[n]*slopeErr)**2) for n in range(len(err))]
+>>>>>>> 35f3570c4e8f42ba3e109716721c33d48f1fd7c7
         return energyData, errProp
     else:
         return energyData
@@ -607,9 +622,39 @@ def pressureData(folderName):
         
     for file in data:
         popt, perr, rchi, dof = fitAlphaPeak(outPath+'/'+file, folderName+'/'+file, p0=[60, 1, 0.7, 10],\
-                                          left=50, right=30, filenm=file)
+                                          right=80, filenm=file)
         peak_means.append(popt[3])
         peak_means_e.append(perr[3])
+        
+    fig = plt.figure(figsize=(8,6))
+    x = pressure
+    y = peak_means
+    yerr = peak_means_e
+    popt, perr = linearFit(x, y, yerr)
+    m = popt[0]
+    b = popt[1]
+    m_e = perr[0]
+    b_e = perr[1]
+    xx = np.linspace(min(x), max(x))
+    plt.plot(xx, m*xx+b*np.ones(len(xx)),label='Fit', color='r')
+    plt.errorbar(x, y, yerr=yerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=4,color='b')
+    npara = 2
+    rchi, dof = reducedChiSquare(y, m*x+b*np.ones(len(x)), yerr, npara)
+    plt.xlabel('Pressure (mBar)')
+    plt.ylabel('Energy (MeV)')
+    
+    d = y-(m*x+b*np.ones(len(x)))
+    axes = plt.gca()
+    plotStudRes(axes, d, x, yerr, res_tick=[-5,0,5])
+    
+    print('\nIntercept: %f $\pm$ %f'%(b,b_e))
+    print('Slope: %f $\pm$ %f'%(m,m_e))
+    print('r-chi-square: %.2f'%rchi)
+    print('DOF: %d'%dof)
+    
+    plt.show()
+    fig.savefig(outPath+'/StoppingPower.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
     
     #Target thickness is (air density) * (distance b/w source and detector)
     #Using the names given in the notebook, the distance between the source and the
@@ -620,7 +665,15 @@ def pressureData(folderName):
     #(once again, in cm)
     Distance_e = ((4.0*(0.005**2.0))**0.5)/10.0
     #Air density rho_air is (M_air*pressure)/(R*T)
-    #The values of M_air, T, R, are defined at the beginning of this file
+    #The value and error of M_air are referenced in the .bib file
+    M_air =  28.964 #in [g] [mol-1]
+    M_air_e =  0.002 #in [g] [mol-1]
+    #The value and error of R are referenced in the .bib file
+    R = 83.14449*1000.0  #in [cm3] [mbar] [K−1] [mol−1]
+    R_e =  0.00056*1000.0 #in [cm3] [mbar] [K−1] [mol−1] 
+    #T was measured as multiple values between 21.0 and 22.6, so for now take 21.8
+    T = 21.8+273.16 #in [K]
+    T_e = 0.1 #in [K]
     pressure_e = 10.0 #in [mbar]
     #Thickness is defined as M_air*pressure*Distance/(R*T)
     Thickness = []
@@ -628,44 +681,6 @@ def pressureData(folderName):
     for i in range(len(pressure)):
         Thickness.append( M_air*pressure[i]*Distance/(R*T) ) #in [g] [cm-2]
         Thickness_e.append( ( (M_air_e * pressure[i]*Distance/(R*T))**2 + (pressure_e * M_air*Distance/(R*T))**2 + (Distance_e * M_air*pressure[i]/(R*T))**2 + (R_e * M_air*pressure[i]*Distance/(R*R*T))**2 + (T_e * M_air*pressure[i]*Distance/(R*T*T))**2 )**0.5 ) #in [g] [cm-2]
-    
-
-
-    
-    fig = plt.figure(figsize=(8,6))
-#    x = pressure
-    x = Thickness
-    y = peak_means
-    yerr = peak_means_e
-    popt, perr = linearFit(x, y, yerr)
-    m = popt[0]
-    b = popt[1]
-    m_e = perr[0]
-    b_e = perr[1]
-#    xx = np.linspace(min(x), max(x))
-#    plt.plot(xx, m*xx+b*np.ones(len(xx)),label='Fit', color='r')
-    plt.errorbar(x, y, yerr=yerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=4,color='b')
-#    npara = 2
-#    rchi, dof = reducedChiSquare(y, m*x+b*np.ones(len(x)), yerr, npara)
-#    plt.xlabel('Pressure (mBar)')
-    plt.xlabel(r'Thickness (g$\cdot$cm$^{-2}$)')
-    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
-    plt.ylabel('Energy (MeV)')
-    
-#    d = y-(m*x+b*np.ones(len(x)))
-#    axes = plt.gca()
-#    plotStudRes(axes, d, x, yerr, res_tick=[-5,0,5])
-    
-#    print('\nIntercept: %f $\pm$ %f'%(b,b_e))
-#    print('Slope: %f $\pm$ %f'%(m,m_e))
-#    print('r-chi-square: %.2f'%rchi)
-#    print('DOF: %d'%dof)
-    
-    plt.show()
-#    fig.savefig(outPath+'/EnergyVsPressure.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
-    fig.savefig(outPath+'/EnergyVsThickness.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
-
     
 
     ## Reshuffle data to be in order of increasing thickness
@@ -697,7 +712,7 @@ def locallyDifferentiate(x,y,xerr,yerr):
     X=[]
     Xerr=[]
     for n in range(1,len(x)):
-        X.append(np.sqrt(x[n]**2+x[n-1]**2)/2)
+        X.append((x[n]+x[n-1])/2)
         Xerr.append((xerr[n]+xerr[n-1])/2)
     print(len(X))
     Y=[]
@@ -738,11 +753,13 @@ def calculateStoppingPower(folderName):
     # plot away
     fig = plt.figure(figsize=(8, 6))
     plt.errorbar(t, S, yerr=Serr, xerr=t_err, fmt='+', elinewidth=1, capsize=2, ecolor='b', label='Data', linestyle='None', markersize=4, color='b')
+<<<<<<< HEAD
     plt.xlabel(r'Thickness (g$\cdot$cm$^{-2}$)')
 #    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
+=======
+    plt.xlabel('Thickness (kg/cm^2)')
+>>>>>>> 35f3570c4e8f42ba3e109716721c33d48f1fd7c7
     plt.ylabel('Stopping Power (MeV/cm)')
-    fig.savefig('Figures/Pressure/StoppingPower.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
-    
 
 
 ####################################################################################################################
@@ -759,15 +776,15 @@ def activityFit(filePathtobeSaved, x, y, yerr, guess):
     perr = np.sqrt(np.diag(pcov))
     npara = 4
     rchi, dof = reducedChiSquare(y, activityFitFunc(x, *popt), yerr, npara)
-    plt.errorbar(x, y, yerr=yerr, fmt='o', elinewidth=1.5 ,capsize=4, ecolor='b', \
-                 label='Data', linestyle='None', markersize=3,color='k')
+    plt.errorbar(x, y, yerr=yerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+                 label='Data', linestyle='None', markersize=4,color='b')
     xx = np.linspace(min(x), max(x))
-    plt.plot(xx, activityFitFunc(xx, *popt), '-r', label='Fit', linewidth=2)
-#    plt.legend()
-    plt.ylabel('$^{212}$Bi Activity (count/s)')
+    plt.plot(xx, activityFitFunc(xx, *popt), '-r', label='Fit')
+    plt.legend()
+    plt.ylabel('Activity ($s^{-1}$)')
     plt.xlabel('Time (s)')
     print('lambda1: %f \pm %f'%(popt[0], perr[0]))
-    print('lambda2: %.9f \pm %.9f'%(popt[1], perr[1]))
+    print('lambda2: %f \pm %f'%(popt[1], perr[1]))
     print('N0: %f \pm %f'%(popt[2], perr[2]))
     print('N1: %f \pm %f'%(popt[3], perr[3]))
     print('RChi: %f'%(rchi))
@@ -817,7 +834,7 @@ def halflifeMeasurement(outFileName, folderName):
     return T1, T1_e, T2, T2_e
 
 def branchingRatio_FourPeaks(InFileName):
-    outFileName = 'Figures/BranchingRatio/'+InFileName+'_FourPeaks'
+    outFileName = 'Figures/BranchingRatio/'+InFileName 
     spectrum = chnsum(InFileName)
     left = 1200
 #    left = 1280
@@ -827,9 +844,9 @@ def branchingRatio_FourPeaks(InFileName):
     y = leftSpec
     yerr = np.sqrt(y)
     x = np.arange(left,right)
-#    plt.plot(x,leftSpec)
+    plt.plot(x,leftSpec)
     # Guess of fitting 5 peaks
-    p0 = [500, 0.35, 2.5, left+20, 600, 0.35, 1.5, left+50, 15000, 0.3, 1.5, left+115, 6000, 0.3, 1.5, left+125, 5000, 0.3, 1.3, left+105] # A, l, s, m
+    p0 = [600, 0.1, 2.5, left+20, 600, 0.1, 1.5, left+50, 15000, 0.3, 1.5, left+115, 6000, 0.1, 1.5, left+125, 5000, 0.3, 1.3, left+105] # A, l, s, m
     # Guess of fitting 4 peaks
 #    p0 = [700, 0.1, 2.5, left+20, 7000, 0.1, 1.5, left+50, 15000, 0.3, 1.5, left+115, 6000, 0.3, 1.5, left+125]
 #    p0 = [10000, 0.3, 1.3, left+35, 4000, 0.3, 1.3, left+45, 3000, 1, 1.3, left+15, 2000, 1, 1.3, left+25] # A, l, s, m
@@ -841,9 +858,11 @@ def branchingRatio_FourPeaks(InFileName):
         temp = popt[i*4:(i+1)*4]
         plt.plot(x, expGauss(x, *temp))
 
-    # convert mean channels to energies
+    #convert mean channels to energies
     for i in range(0, len(popt), 4):
         popt[i+3], perr[i+3] = convertChannelToEnergy(popt[i+3], err=perr[i+3])
+
+
 
     # make fitted parameter into a matrix, as well as the fitting error in another matrix
     l = int(len(popt)/4)
@@ -858,7 +877,7 @@ def branchingRatio_FourPeaks(InFileName):
     
     
 def branchingRatio_Largest(InFileName):
-    outFileName = 'Figures/BranchingRatio/'+InFileName+'_Largest'
+    outFileName = 'Figures/BranchingRatio/'+InFileName 
     spectrum = chnsum(InFileName)
     left = 1830
     right = 1852
@@ -903,7 +922,7 @@ def branchingRatio_Largest(InFileName):
 
 def integrateExpGauss(params):
     # params is the vector (A,lambda, sigma, mu) describing the expgaussian integrand
-    return quad(expGauss, 0, np.inf, args=(params[0],params[1],params[2],params[3]))[0]
+    return quad(expGauss, 1200, 1500, args=(params[0],params[1],params[2],params[3]))[0]
 
 def diffExpGaussSigma(x,params):
     #returns the derivative of ExpGaussFunction with respect to sigma as function of x
@@ -914,7 +933,7 @@ def diffExpGaussSigma(x,params):
     return A*l/(2*s**2)*np.exp(-(x-m)**2/(2*s**2))*(np.sqrt(2/np.pi)*(x-m-l*(s**2))+(l**2)*(s**3)*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s))))
 
 def integrateDiffExpGaussSigma(params):
-    return quad(diffExpGaussSigma, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
+    return quad(diffExpGaussSigma, 1200, 1500, args=(params))[0]
 
 
 def diffExpGaussLambda(x, params):
@@ -927,7 +946,7 @@ def diffExpGaussLambda(x, params):
     return A/2*np.exp(l/2*(2*x-2*m+l*s*s))*((1+l*(x-m+l*s**2))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))-np.sqrt(2/np.pi)*l*s*(np.exp(-(x-m+l*s**2)**2/(2*s**2))))
 
 def integrateDiffExpGaussLambda(params):
-    return quad(diffExpGaussLambda, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
+    return quad(diffExpGaussLambda, 1200, 1500, args=(params))[0]
 
 
 def diffExpGaussA(x,params):
@@ -938,7 +957,7 @@ def diffExpGaussA(x,params):
     return l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))
 
 def integrateDiffExpGaussA(params):
-    return quad(diffExpGaussA, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
+    return quad(diffExpGaussA, 1200, 1500, args=(params))[0]
 
 
 def diffExpGaussMu(x,params):
@@ -951,26 +970,26 @@ def diffExpGaussMu(x,params):
     return A*l/(2*np.sqrt(np.pi)*s)*np.exp(l/2*(2*x-2*m+l*s*s))*(np.sqrt(2)*(np.exp(-(x-m+l*s**2)**2/(2*s**2)))-np.sqrt(np.pi)*l*s*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s))))
 
 def integrateDiffExpGaussMu(params):
-    return quad(diffExpGaussMu, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
+    return quad(diffExpGaussMu, 1200, 1500, args=(params))[0]
 
 def calculateBranchRatio(Params,ParamErrs):
     # Params is a lists of lists. Each embedded list is a set of parameters for a single transition fit, [A,l,s,m]
     # ParamErrs is similarly a list of lists of the associated errors on the fits of each parameters
     # Assume the parameter vectors are orderred in the order of increasing energy
-    b=[integrateExpGauss(Params[i-1]) for i in range(1,5)]
+    b=[integrateExpGauss(Params[i-1]) for i in range(1,6)]
     totalArea = sum(b)
-    totalDiffA= sum([integrateDiffExpGaussA(Params[i-1]) for i in range(1,5)])
-    totalDiffLambda = sum([integrateDiffExpGaussLambda(Params[i-1]) for i in range(1,5)])
-    totalDiffSigma = sum([integrateDiffExpGaussSigma(Params[i-1]) for i in range(1,5)])
-    totalDiffMu = sum([integrateDiffExpGaussMu(Params[i-1]) for i in range(1,5)])
+    totalDiffA= sum([integrateDiffExpGaussA(Params[i-1]) for i in range(1,6)])
+    totalDiffLambda = sum([integrateDiffExpGaussLambda(Params[i-1]) for i in range(1,6)])
+    totalDiffSigma = sum([integrateDiffExpGaussSigma(Params[i-1]) for i in range(1,6)])
+    totalDiffMu = sum([integrateDiffExpGaussMu(Params[i-1]) for i in range(1,6)])
     b =np.array(b)
-    b = np.multiply((1 / totalArea), b)
+
     print(b)
     bErr=[] #array of error on branching ratios
-    for i in range(1,5):
+    for i in range(1,6):
         # propagate the error
         err = 0.0
-        for n in range(1,5): #all fitted function parameter errors propogate so loop through all of them
+        for n in range(1,6): #all fitted function parameter errors propogate so loop through all of them
             paramErrs = ParamErrs[n-1]
             if n==i:
                 derivsA = [(integrateDiffExpGaussA(Params[i-1])*totalArea-totalDiffA*integrateExpGauss(Params[i-1]))/(totalArea**2),
@@ -984,16 +1003,52 @@ def calculateBranchRatio(Params,ParamErrs):
                 derivsB = [(integrateExpGauss(Params[i-1])*integrateDiffExpGaussA(Params[n-1]))/(totalArea**2),
                            (integrateExpGauss(Params[i-1])*integrateDiffExpGaussLambda(Params[n-1]))/(totalArea**2),
                            (integrateExpGauss(Params[i-1])*integrateDiffExpGaussSigma(Params[n-1]))/(totalArea**2),
-                           (integrateExpGauss(Params[i-1]) * integrateDiffExpGaussMu(Params[n-1])) / (totalArea ** 2)]
+                           (integrateExpGauss(Params[i-1]) * integrateDiffExpGaussMu(Params[n-1]))/(totalArea ** 2)]
                 err = err + sum([(derivsB[j-1]*paramErrs[j-1])**2 for j in range(1,5)])
-            bErr.append(err)
+        bErr.append(np.sqrt(err))
 
-    b = np.array(b)
+    #b = np.array(b)
+    #print(b)
+
+    # add weighted contribution of the anomolous extra peak to the ratios of the two closely spaced peaks
+
+    b[2]=b[2]+(b[2]/(b[2]+b[3]))*b[4]
+    b[3]=b[3]+(b[3]/(b[2]+b[3]))*b[4]
+
+    # propogate the errors one last time
+
+    deriva = [1+(b[4]*b[3])/(b[2]+b[3])**2, b[2]*b[4]/(b[2]+b[3])**2, b[2]/(b[2]+b[3])]
+    derivb = [1+(b[4]*b[2])/(b[2]+b[3])**2, b[3]*b[4]/(b[2]+b[3])**2, b[3]/(b[2]+b[3])]
+
+    bErr[2]=np.sqrt(sum([(deriva[n]*bErr[n+2])**2 for n in range(0,3)]))
+    bErr[3] = np.sqrt(sum([(derivb[n]*bErr[n+2])**2 for n in range(0,3)]))
+
+    #elimate the last peak
+    b = b[:-1]
+    bErr = bErr[:-1]
+
+    print(b)
+    print(bErr)
+
+
+    totalArea = sum(b)
+    TOTAL = totalArea
+
+    totalAreaErr = np.sqrt(sum([bErr[n]**2 for n in range(4)]))
+    TOTALErr = totalAreaErr
+
+
+    B = np.multiply((1 / totalArea), b)
+
     bErr = np.array(bErr)
 
-    print("Branching ratios: "+str(b))
-    print("Errors on ratios: "+str(bErr))
+    bErr = [B[n]*np.sqrt((totalAreaErr/totalArea)**2+(bErr[n]/b[n])) for n in range(4)]
 
+    bErr = np.array(bErr)
+
+    print(sum(B))
+    print("Branching ratios: "+str(B))
+    print("Errors on ratios: "+str(bErr))
 
 ####################################################################################################################
 ############################################## Function Calling Area ###############################################
@@ -1004,22 +1059,6 @@ def calculateBranchRatio(Params,ParamErrs):
 
 #calculateStoppingPower('PressureWBias_1')
 
-#print(Energy)
-#print(Thickness)
-
-#x, y, xerr, yerr = locallyDifferentiate(Thickness,Energy,Thickness_e, Energy_e)
-
-#x = np.asarray(x)
-#y = np.asarray(y)
-
-#print(y)
-#print(x)
-
-#xerr = np.asarray(xerr)
-#yerr = np.asarray(yerr)
-
-#fig = plt.figure(figsize=(8,6))
-#plt.errorbar(x, -y, yerr=yerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \label='Data', linestyle='None', markersize=4,color='b')
 
 #popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
 #                         [100, 2.5, 2, 20, 785, 2.5, 1.8, 30, 1750, 2, 1.6, 40], left=40, right=20, res_tick=[-2,0,2])
@@ -1029,16 +1068,27 @@ def calculateBranchRatio(Params,ParamErrs):
 #                         [8, 50, 3, 60, 60, 3, 310, 70, 2], left=70, right=30, res_tick=[-2,0,2])
 
 #halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
-#halflifeMeasurement('OneHourCollectionTime', 'Decay_60_min_1')
-#halflifeMeasurement('TwentyMinCollectionTime', 'Decay_20_min_1')
 
 
+<<<<<<< HEAD
 #Values = branchingRatio_FourPeaks('Decay_3')[0]
+#Errs = branchingRatio_FourPeaks('Decay_3')[1]
+=======
+Values = branchingRatio_Largest('Decay_3')[0]
+
+Errs = branchingRatio_Largest('Decay_3')[1]
+
+
+>>>>>>> 35f3570c4e8f42ba3e109716721c33d48f1fd7c7
+#calculateBranchRatio(Values,Errs)
+
+<<<<<<< HEAD
+branchingRatio_Largest('Decay_3')
+=======
 #Errs = branchingRatio_FourPeaks('Decay_3')[1]
 #calculateBranchRatio(Values,Errs)
 #branchingRatio_Largest('Decay_3')
-
-branchingRatio_Largest('Decay_3')
+>>>>>>> 35f3570c4e8f42ba3e109716721c33d48f1fd7c7
 
 
 
