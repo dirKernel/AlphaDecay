@@ -150,13 +150,16 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     popt, pcov = curve_fit(expGaussMul, x, y, p0=p0, maxfev=5000000)
     npara = len(p0)
     rchi, dof = reducedChiSquare(y, expGaussMul(x, *popt), yerr, npara)
-    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='+', elinewidth=1.5 ,capsize=3, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5 ,color='k')
-    plt.plot(x+x0-left, expGaussMul(x, *popt), '-r', label='Fit', linewidth=2)
-    plt.legend(loc=2)
-    plt.xlabel('MCA Channel Number')
-    plt.ylabel('Counts')
-    plt.ylim((-100,3400))
+    xx, xx_e = convertChannelToEnergy(x)
+    x0, x0_e = convertChannelToEnergy(x0)
+    left, l_e = convertChannelToEnergy(left)
+    plt.errorbar(xx+x0-left, y, yerr=yerr, xerr=xx_e+x0_e-l_e, fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
+                 label='Data', linestyle='None', markersize=3 ,color='k')
+    plt.plot(xx+x0-left, expGaussMul(x, *popt), '-r', label='Fit', linewidth=2)
+#    plt.legend(loc=2)
+    plt.xlabel('Energy (MeV)')
+    plt.ylabel(r'$^{212}$Bi Decay to $^{208}$Tl'+'\nChannel Counts')
+#    plt.ylim((-100,3400))
     perr = np.sqrt(np.diag(pcov))
     
     for i in range(0,len(popt),4):
@@ -170,30 +173,29 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     # Plot residuals
     d = y-expGaussMul(x,*popt)
     axes = plt.gca()
-    plotStudRes(axes, d, x, yerr, res_tick=res_tick, x0=x0, left=left)
-    
-    print(popt)
-    ax = fig.add_subplot(111)
-    ax.annotate('#1', xy=(popt[3]-2, 200), xytext=(popt[3]-2, 200+400),\
-            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
-    ax.annotate('#2', xy=(popt[7]-2, 200), xytext=(popt[7]-2, 200+400),\
-            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
-    ax.annotate('#3', xy=(popt[11]-2, 2700), xytext=(popt[11]-2, 2700+400),\
-            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
-    ax.annotate('#4', xy=(popt[15]-1, 1200), xytext=(popt[15]-1, 1200+400),\
-            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
+    plotStudRes(axes, d, xx, yerr, res_tick=res_tick, x0=x0, left=left)  
+
+#    ax = fig.add_subplot(111)
+#    ax.annotate('#1', xy=(convertChannelToEnergy(popt[3]-2, noErr=True), 200), xytext=(convertChannelToEnergy(popt[3]-2, noErr=True), 200+400),\
+#            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
+#    ax.annotate('#2', xy=(convertChannelToEnergy(popt[7]-2, noErr=True), 200), xytext=(convertChannelToEnergy(popt[7]-2, noErr=True), 200+400),\
+#            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
+#    ax.annotate('#3', xy=(convertChannelToEnergy(popt[11]-2, noErr=True), 2700), xytext=(convertChannelToEnergy(popt[11]-2, noErr=True), 2700+400),\
+#            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
+#    ax.annotate('#4', xy=(convertChannelToEnergy(popt[15]-1, noErr=True), 1200), xytext=(convertChannelToEnergy(popt[15]-1, noErr=True), 1200+400),\
+#            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
 
     plt.show()
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
     
     return popt, perr, rchi, dof # return the mean channel values  
 
-def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
+def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3], xerr=0):
     fig = plt.figure(figsize=(8, 6))
     popt, pcov = curve_fit(expGauss, x, y, p0=p0, maxfev=50000)
     npara = len(p0)
     rchi, dof = reducedChiSquare(y, expGauss(x, *popt), yerr, npara)
-    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
+    plt.errorbar(x+x0-left, y, yerr=yerr, xerr=xerr,fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
                  label='Data', linestyle='None', markersize=3 ,color='k')
     plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
     plt.xlabel('Energy (MeV)')
@@ -367,15 +369,15 @@ def fitAlphaPeak(filePathtobeSaved, filePath, p0, left=100, right=100, res_tick=
     print(xx)
     print(x0-left)
     
-    xx = convertChannelToEnergy(xx)
-    x0 = convertChannelToEnergy(x0)
-    left = convertChannelToEnergy(left)
+    xx, xxErr = convertChannelToEnergy(xx)
+    x0, x0Err = convertChannelToEnergy(x0)
+    left, leftErr = convertChannelToEnergy(left)
     print(xx)
     print(x0-left)
 #    p0[3] = convertChannelToEnergy(p0[3])
     
     yerr = np.sqrt(yy)
-    popt, perr, rchi, dof = expGaussFit(filePathtobeSaved, xx, yy, yerr, p0, x0, left, res_tick)
+    popt, perr, rchi, dof = expGaussFit(filePathtobeSaved, xx, yy, yerr, p0, x0, left, res_tick, xerr=xxErr)
     popt[3] += x0-left
     print('File Name: %s'%filenm)
     print('Mean 1 (Not Scaled): %f \pm %f'%(popt[3], perr[3]))
@@ -437,12 +439,14 @@ def fitAlphaPeaksGaussMul(filePathtobeSaved, filePath, p0, left=100, right=100, 
 ################################# Transform from channel number data to energy #####################################
 ####################################################################################################################
 
-def convertChannelToEnergy(channelData, err=None):
+def convertChannelToEnergy(channelData, err=0, noErr=False):
     m = slope
     b = intercept
+    m_e = slopeErr
+    b_e = interceptErr
     energyData = m*channelData + b
-    if err != None:
-        errProp = [np.sqrt((m*err[n])**2+interceptErr**2+(channelData[n]*slopeErr)**2) for n in range(len(err))]
+    errProp = np.sqrt((m*err)**2+(m_e*channelData)**2+b_e**2)
+    if not noErr:
         return energyData, errProp
     else:
         return energyData
@@ -721,7 +725,9 @@ def calculateStoppingPower(folderName):
     # plot away
     fig = plt.figure(figsize=(8, 6))
     plt.errorbar(t, S, yerr=Serr, xerr=t_err, fmt='+', elinewidth=1, capsize=2, ecolor='b', label='Data', linestyle='None', markersize=4, color='b')
-    plt.xlabel('Thickness (kg/cm^2)')
+
+    plt.xlabel(r'Thickness (g$\cdot$cm$^{-2}$)')
+#    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
     plt.ylabel('Stopping Power (MeV/cm)')
 
 
@@ -842,14 +848,14 @@ def branchingRatio_FourPeaks(InFileName):
 def branchingRatio_Largest(InFileName):
     outFileName = 'Figures/BranchingRatio/'+InFileName 
     spectrum = chnsum(InFileName)
-    left = 1835
+    left = 1830
     right = 1852
     leftSpec = spectrum[left:right]
     y = leftSpec
     yerr = np.sqrt(y)
     x = np.arange(left,right)
     plt.plot(x,leftSpec)
-    p0 = [25000, 1, 2, left+20, 5000, 1, 2, left+15]
+    p0 = [35000, 1, 1, left+20, 12000, 1, 1, left+15]
     popt, perr, rchi, dof = expGaussFitMul(outFileName, x, y, yerr, p0=p0, x0=0, left=0, res_tick=[-2,0,2])
     
     # Plot each component convolution
@@ -1033,17 +1039,11 @@ def calculateBranchRatio(Params,ParamErrs):
 #halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
 
 
-Values = branchingRatio_Largest('Decay_3')[0]
 
-Errs = branchingRatio_Largest('Decay_3')[1]
-
-
-#calculateBranchRatio(Values,Errs)
-
+#Values = branchingRatio_FourPeaks('Decay_3')[0]
 #Errs = branchingRatio_FourPeaks('Decay_3')[1]
 #calculateBranchRatio(Values,Errs)
-#branchingRatio_Largest('Decay_3')
-
+branchingRatio_Largest('Decay_3')
 
 
 ############### For Vincent to have fun with ####################################
