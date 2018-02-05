@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 mpl.rcParams['axes.linewidth'] = 1.5 #set the value globally
 mpl.rcParams.update({'font.size': 15})
-mpl.rcParams['axes.labelsize'] = 17
+mpl.rcParams['axes.labelsize'] = 18
 from scipy.optimize import curve_fit
 from scipy.integrate import quad
 import scipy as sp
@@ -56,8 +56,8 @@ def plotStudRes(ax, d, xx , yerr, res_tick, x0=0, left=0):
     ax2.axhline(y=0, color='r', linestyle='-', linewidth=2)
     ax.tick_params(axis='both', direction='in')
     ax2.tick_params(axis='both', direction='in')
-    ax2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
-                 label='Data', linestyle='None', markersize=3.5 ,color='k')
+    ax2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='+', elinewidth=1.5 ,capsize=3, ecolor='b', \
+                 label='Data', linestyle='None', markersize=3 ,color='k')
 
 def reducedChiSquare(y,fx,yerr, npara):
     """
@@ -145,22 +145,23 @@ def expGaussMul(x, *params):
 
 def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     fig = plt.figure(figsize=(8, 6))
-    popt, pcov = curve_fit(expGaussMul, x, y, p0=p0, maxfev=500000)
-    npara = len(p0)/4
+    popt, pcov = curve_fit(expGaussMul, x, y, p0=p0, maxfev=5000000)
+    npara = len(p0)
     rchi, dof = reducedChiSquare(y, expGaussMul(x, *popt), yerr, npara)
-    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=4,color='b')
-    plt.plot(x+x0-left, expGaussMul(x, *popt), '-r', label='Fit')
-    plt.legend()
+    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='+', elinewidth=1.5 ,capsize=3, ecolor='b', \
+                 label='Data', linestyle='None', markersize=5 ,color='k')
+    plt.plot(x+x0-left, expGaussMul(x, *popt), '-r', label='Fit', linewidth=2)
+    plt.legend(loc=2)
     plt.xlabel('MCA Channel Number')
     plt.ylabel('Counts')
+    plt.ylim((-100,3400))
     perr = np.sqrt(np.diag(pcov))
     
     for i in range(0,len(popt),4):
-        print('A %d: %f $\pm$ %f'%(i/4, popt[i], perr[i]))
-        print('Lambda %d: %f $\pm$ %f'%(i/4, popt[i+1], perr[i+1]))
-        print('Sigma %d: %f $\pm$ %f'%(i/4, popt[i+2], perr[i+2]))
-        print('Mean %d (Scaled): %f $\pm$ %f\n'%(i/4, popt[i+3], perr[i+3]))
+        print('A %d: %f $\pm$ %f'%(i/4+1, popt[i], perr[i]))
+        print('Lambda %d: %f $\pm$ %f'%(i/4+1, popt[i+1], perr[i+1]))
+        print('Sigma %d: %f $\pm$ %f'%(i/4+1, popt[i+2], perr[i+2]))
+        print('Mean %d (Scaled): %f $\pm$ %f\n'%(i/4+1, popt[i+3], perr[i+3]))
     print('RChi: %f'%(rchi))
     print('DOF: %d'%(dof))
             
@@ -168,6 +169,17 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     d = y-expGaussMul(x,*popt)
     axes = plt.gca()
     plotStudRes(axes, d, x, yerr, res_tick=res_tick, x0=x0, left=left)
+    
+    print(popt)
+    ax = fig.add_subplot(111)
+    ax.annotate('#1', xy=(popt[3]-2, 200), xytext=(popt[3]-2, 200+400),\
+            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
+    ax.annotate('#2', xy=(popt[7]-2, 200), xytext=(popt[7]-2, 200+400),\
+            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
+    ax.annotate('#3', xy=(popt[11]-2, 2700), xytext=(popt[11]-2, 2700+400),\
+            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
+    ax.annotate('#4', xy=(popt[15]-1, 1200), xytext=(popt[15]-1, 1200+400),\
+            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
 
     plt.show()
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
@@ -180,7 +192,7 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     npara = len(p0)
     rchi, dof = reducedChiSquare(y, expGauss(x, *popt), yerr, npara)
     plt.errorbar(x+x0-left, y, yerr=yerr,fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
-                 label='Data', linestyle='None', markersize=3.5 ,color='k')
+                 label='Data', linestyle='None', markersize=3 ,color='k')
     plt.plot(x+x0-left, expGauss(x, *popt), '-r', label='Fit')
     plt.xlabel('Energy (MeV)')
     plt.ylabel('Counts')
@@ -203,7 +215,7 @@ def expGaussFit(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3]):
     return popt, perr, rchi, dof # return the mean channel values  
 
 def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right=15, res_tick=[-3,0,3]):
-    fig = plt.figure(figsize=[8,6])
+    fig = plt.figure(figsize=(8,6))
     ind = np.argmax(y) #to get the peak value x-coord
     x0 = x[ind] #x0 is the peak value x-coord (channel number)
     yy = y[x0-left:x0+right]
@@ -214,7 +226,7 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right
     rchi, dof = reducedChiSquare(yy, gauss(xx, *popt), yerr, npara)
     perr = np.sqrt(np.diag(pcov))
     plt.errorbar(xx+x0-left, yy, yerr=yerr, fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
-                 label='Data', linestyle='None', markersize=3.5 ,color='k') 
+                 label='Data', linestyle='None', markersize=3 ,color='k') 
 #    fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
 #                 label='Data', linestyle='None', markersize=4,color='b'
                  
@@ -240,7 +252,7 @@ def gaussianFit(filePathtobeSaved, x, y, yerr, p0=[300, 20, 2.5], left=15, right
     return popt, perr, rchi
 
 def gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left=15, right=15, res_tick=[-3,0,3], sigmaFixed=True):
-    fig = plt.figure(figsize=[8, 6])
+    fig = plt.figure(figsize=(8, 6))
     ind = np.argmax(y) #to get the peak value x-coord
     x0 = x[ind] #x0 is the peak value x-coord (channel number)
     yy = y[x0-left:x0+right]
@@ -250,16 +262,16 @@ def gaussianFitMul(filePathtobeSaved, x, y, yerr, p0, left=15, right=15, res_tic
         if yerr[i]==0:
             yerr[i] = 1
     popt, pcov = curve_fit(gaussMul, xx, yy, p0=p0, maxfev=500000) #initial guess of the amplitude is 100, mean is x0 and variance (sigma) 5
-    npara = len(p0)/3
+    npara = len(p0)
     rchi, dof = reducedChiSquare(yy, gaussMul(xx, *popt), yerr, npara)
     perr = np.sqrt(np.diag(pcov))
     plt.errorbar(xx+x0-left, yy, yerr=yerr,fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
-                 label='Data', linestyle='None', markersize=3.5 ,color='k')
+                 label='Data', linestyle='None', markersize=3 ,color='k')
     xxx = np.linspace(min(xx),max(xx),1000)
     plt.plot(xxx+x0-left, gaussMul(xxx, *popt), 'r-', label='Fit', linewidth=2)
     #plt.legend()
     plt.xlabel('MCA Channel Number')
-    plt.ylabel('Alpha Deacay Channel Counts')
+    plt.ylabel('Alpha Decay Channel Counts')
     
     # Plot residuals
     d = yy-gaussMul(xx,*popt)
@@ -428,7 +440,7 @@ def convertChannelToEnergy(channelData, err=None):
     b = intercept
     energyData = m*channelData + b
     if err != None:
-        errProp = m*err
+        errProp = [np.sqrt((m*err[n])**2+interceptErr**2+(channelData[n]*slopeErr)**2) for n in range(len(err))]
         return energyData, errProp
     else:
         return energyData
@@ -472,7 +484,7 @@ def calibratePulses(folderName):
     filePathtobeSaved = 'Figures/Calibration/pulseLinear'
     fig = plt.figure(figsize=(8,6))
     plt.errorbar(x, y, yerr=yerr, xerr=xerr, fmt='o', elinewidth=1.5 ,capsize=4.5, ecolor='b', \
-                 label='Data', linestyle='None', markersize=3.5 ,color='k')
+                 label='Data', linestyle='None', markersize=3 ,color='k')
 
     popt, perr = LinearFit_xIntercept(x, y, yerr)
 
@@ -493,6 +505,8 @@ def calibratePulses(folderName):
     plt.ylabel('Pulser Voltage (V)')
     print('x-intercept: %f $\pm$ %f'%(h,h_e))
     print('Slope: %f $\pm$ %f'%(m,m_e))
+    print('RChi: %f'%(rchi))
+    print('DOF: %d'%(dof))
     plt.legend()
     
     d = y-(x*m-m*h*np.ones(len(x)))
@@ -794,7 +808,7 @@ def branchingRatio_FourPeaks(InFileName):
     x = np.arange(left,right)
     plt.plot(x,leftSpec)
     # Guess of fitting 5 peaks
-    p0 = [700, 0.1, 2.5, left+20, 7000, 0.1, 1.5, left+50, 15000, 0.3, 1.5, left+115, 6000, 0.3, 1.5, left+125, 5000, 0.3, 1.3, left+130] # A, l, s, m
+    p0 = [600, 0.1, 2.5, left+20, 600, 0.1, 1.5, left+50, 15000, 0.3, 1.5, left+115, 6000, 0.1, 1.5, left+125, 5000, 0.3, 1.3, left+105] # A, l, s, m
     # Guess of fitting 4 peaks
 #    p0 = [700, 0.1, 2.5, left+20, 7000, 0.1, 1.5, left+50, 15000, 0.3, 1.5, left+115, 6000, 0.3, 1.5, left+125]
 #    p0 = [10000, 0.3, 1.3, left+35, 4000, 0.3, 1.3, left+45, 3000, 1, 1.3, left+15, 2000, 1, 1.3, left+25] # A, l, s, m
@@ -806,9 +820,11 @@ def branchingRatio_FourPeaks(InFileName):
         temp = popt[i*4:(i+1)*4]
         plt.plot(x, expGauss(x, *temp))
 
-    # convert mean channels to energies
+    #convert mean channels to energies
     for i in range(0, len(popt), 4):
         popt[i+3], perr[i+3] = convertChannelToEnergy(popt[i+3], err=perr[i+3])
+
+
 
     # make fitted parameter into a matrix, as well as the fitting error in another matrix
     l = int(len(popt)/4)
@@ -868,7 +884,7 @@ def branchingRatio_Largest(InFileName):
 
 def integrateExpGauss(params):
     # params is the vector (A,lambda, sigma, mu) describing the expgaussian integrand
-    return quad(expGauss, 0, np.inf, args=(params[0],params[1],params[2],params[3]))[0]
+    return quad(expGauss, 1200, 1500, args=(params[0],params[1],params[2],params[3]))[0]
 
 def diffExpGaussSigma(x,params):
     #returns the derivative of ExpGaussFunction with respect to sigma as function of x
@@ -879,7 +895,7 @@ def diffExpGaussSigma(x,params):
     return A*l/(2*s**2)*np.exp(-(x-m)**2/(2*s**2))*(np.sqrt(2/np.pi)*(x-m-l*(s**2))+(l**2)*(s**3)*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s))))
 
 def integrateDiffExpGaussSigma(params):
-    return quad(diffExpGaussSigma, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
+    return quad(diffExpGaussSigma, 1200, 1500, args=(params))[0]
 
 
 def diffExpGaussLambda(x, params):
@@ -892,7 +908,7 @@ def diffExpGaussLambda(x, params):
     return A/2*np.exp(l/2*(2*x-2*m+l*s*s))*((1+l*(x-m+l*s**2))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))-np.sqrt(2/np.pi)*l*s*(np.exp(-(x-m+l*s**2)**2/(2*s**2))))
 
 def integrateDiffExpGaussLambda(params):
-    return quad(diffExpGaussLambda, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
+    return quad(diffExpGaussLambda, 1200, 1500, args=(params))[0]
 
 
 def diffExpGaussA(x,params):
@@ -903,7 +919,7 @@ def diffExpGaussA(x,params):
     return l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))
 
 def integrateDiffExpGaussA(params):
-    return quad(diffExpGaussA, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
+    return quad(diffExpGaussA, 1200, 1500, args=(params))[0]
 
 
 def diffExpGaussMu(x,params):
@@ -916,26 +932,26 @@ def diffExpGaussMu(x,params):
     return A*l/(2*np.sqrt(np.pi)*s)*np.exp(l/2*(2*x-2*m+l*s*s))*(np.sqrt(2)*(np.exp(-(x-m+l*s**2)**2/(2*s**2)))-np.sqrt(np.pi)*l*s*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s))))
 
 def integrateDiffExpGaussMu(params):
-    return quad(diffExpGaussMu, 0, np.inf, args=(params[0], params[1], params[2], params[3]))[0]
+    return quad(diffExpGaussMu, 1200, 1500, args=(params))[0]
 
 def calculateBranchRatio(Params,ParamErrs):
     # Params is a lists of lists. Each embedded list is a set of parameters for a single transition fit, [A,l,s,m]
     # ParamErrs is similarly a list of lists of the associated errors on the fits of each parameters
     # Assume the parameter vectors are orderred in the order of increasing energy
-    b=[integrateExpGauss(Params[i-1]) for i in range(1,5)]
+    b=[integrateExpGauss(Params[i-1]) for i in range(1,6)]
     totalArea = sum(b)
-    totalDiffA= sum([integrateDiffExpGaussA(Params[i-1]) for i in range(1,5)])
-    totalDiffLambda = sum([integrateDiffExpGaussLambda(Params[i-1]) for i in range(1,5)])
-    totalDiffSigma = sum([integrateDiffExpGaussSigma(Params[i-1]) for i in range(1,5)])
-    totalDiffMu = sum([integrateDiffExpGaussMu(Params[i-1]) for i in range(1,5)])
+    totalDiffA= sum([integrateDiffExpGaussA(Params[i-1]) for i in range(1,6)])
+    totalDiffLambda = sum([integrateDiffExpGaussLambda(Params[i-1]) for i in range(1,6)])
+    totalDiffSigma = sum([integrateDiffExpGaussSigma(Params[i-1]) for i in range(1,6)])
+    totalDiffMu = sum([integrateDiffExpGaussMu(Params[i-1]) for i in range(1,6)])
     b =np.array(b)
-    b = np.multiply((1 / totalArea), b)
+
     print(b)
     bErr=[] #array of error on branching ratios
-    for i in range(1,5):
+    for i in range(1,6):
         # propagate the error
         err = 0.0
-        for n in range(1,5): #all fitted function parameter errors propogate so loop through all of them
+        for n in range(1,6): #all fitted function parameter errors propogate so loop through all of them
             paramErrs = ParamErrs[n-1]
             if n==i:
                 derivsA = [(integrateDiffExpGaussA(Params[i-1])*totalArea-totalDiffA*integrateExpGauss(Params[i-1]))/(totalArea**2),
@@ -949,14 +965,48 @@ def calculateBranchRatio(Params,ParamErrs):
                 derivsB = [(integrateExpGauss(Params[i-1])*integrateDiffExpGaussA(Params[n-1]))/(totalArea**2),
                            (integrateExpGauss(Params[i-1])*integrateDiffExpGaussLambda(Params[n-1]))/(totalArea**2),
                            (integrateExpGauss(Params[i-1])*integrateDiffExpGaussSigma(Params[n-1]))/(totalArea**2),
-                           (integrateExpGauss(Params[i-1]) * integrateDiffExpGaussMu(Params[n-1])) / (totalArea ** 2)]
+                           (integrateExpGauss(Params[i-1]) * integrateDiffExpGaussMu(Params[n-1]))/(totalArea ** 2)]
                 err = err + sum([(derivsB[j-1]*paramErrs[j-1])**2 for j in range(1,5)])
-            bErr.append(err)
+        bErr.append(np.sqrt(err))
 
-    b = np.array(b)
+    #b = np.array(b)
+    #print(b)
+
+    # add weighted contribution of the anomolous extra peak to the ratios of the two closely spaced peaks
+
+    b[2]=b[2]+(b[2]/(b[2]+b[3]))*b[4]
+    b[3]=b[3]+(b[3]/(b[2]+b[3]))*b[4]
+
+    # propogate the errors one last time
+
+    deriva = [1+(b[4]*b[3])/(b[2]+b[3])**2, b[2]*b[4]/(b[2]+b[3])**2, b[2]/(b[2]+b[3])]
+    derivb = [1+(b[4]*b[2])/(b[2]+b[3])**2, b[3]*b[4]/(b[2]+b[3])**2, b[3]/(b[2]+b[3])]
+
+    bErr[2]=np.sqrt(sum([(deriva[n]*bErr[n+2])**2 for n in range(0,3)]))
+    bErr[3] = np.sqrt(sum([(derivb[n]*bErr[n+2])**2 for n in range(0,3)]))
+
+    #elimate the last peak
+    b = b[:-1]
+    bErr = bErr[:-1]
+
+    print(b)
+    print(bErr)
+
+    totalArea = sum(b)
+    totalAreaErr = np.sqrt(sum([bErr[n]**2 for n in range(4)]))
+
+
+
+    B = np.multiply((1 / totalArea), b)
+
     bErr = np.array(bErr)
 
-    print("Branching ratios: "+str(b))
+    bErr = [B[n]*np.sqrt((totalAreaErr/totalArea)**2+(bErr[n]/b[n])) for n in range(4)]
+
+    bErr = np.array(bErr)
+
+    print(sum(B))
+    print("Branching ratios: "+str(B))
     print("Errors on ratios: "+str(bErr))
 
 
@@ -964,27 +1014,11 @@ def calculateBranchRatio(Params,ParamErrs):
 ############################################## Function Calling Area ###############################################
 ####################################################################################################################
     
-m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
+#m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
 #m_press, m_press_e, b_press, b_press_e, Energy, Energy_e, Thickness, Thickness_e = pressureData('PressureWBias_1')
 
 #calculateStoppingPower('PressureWBias_1')
 
-#print(Energy)
-#print(Thickness)
-
-#x, y, xerr, yerr = locallyDifferentiate(Thickness,Energy,Thickness_e, Energy_e)
-
-#x = np.asarray(x)
-#y = np.asarray(y)
-
-#print(y)
-#print(x)
-
-#xerr = np.asarray(xerr)
-#yerr = np.asarray(yerr)
-
-#fig = plt.figure(figsize=(8,6))
-#plt.errorbar(x, -y, yerr=yerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \label='Data', linestyle='None', markersize=4,color='b')
 
 #popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
 #                         [100, 2.5, 2, 20, 785, 2.5, 1.8, 30, 1750, 2, 1.6, 40], left=40, right=20, res_tick=[-2,0,2])
@@ -996,7 +1030,13 @@ m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
 #halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
 
 
-#Values = branchingRatio_FourPeaks('Decay_3')[0]
+Values = branchingRatio_Largest('Decay_3')[0]
+
+Errs = branchingRatio_Largest('Decay_3')[1]
+
+
+#calculateBranchRatio(Values,Errs)
+
 #Errs = branchingRatio_FourPeaks('Decay_3')[1]
 #calculateBranchRatio(Values,Errs)
 #branchingRatio_Largest('Decay_3')
