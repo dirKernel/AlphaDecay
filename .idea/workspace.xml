@@ -1,42 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="18cd4a51-4402-44f8-89cf-c3f8801e920b" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/1000_mV_0115.eps" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/1000_mV_20_mV_0124.eps" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/1500_mV_0115.eps" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/2000_mV_0115.eps" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/2500_mV_0115.eps" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/3000_mV_0115.eps" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/3500_mV_0115.eps" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/4000_mV_0115.eps" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/4500_mV_0115.eps" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/5000_mV_0115.eps" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/5500_mV_0115.eps" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/6000_mV_0115.eps" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/6500_mV_0115.eps" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/7000_mV_0115.eps" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/7500_mV_0115.eps" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/8000_mV_0115.eps" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Figures/Calibration/Am_0111_1.eps" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Analysis.py" afterPath="$PROJECT_DIR$/Analysis.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Figures/BranchingRatio/Decay_3.eps" afterPath="$PROJECT_DIR$/Figures/BranchingRatio/Decay_3.eps" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Figures/Calibration/1520_mV_20_mV_0124.eps" afterPath="$PROJECT_DIR$/Figures/Calibration/1520_mV_20_mV_0124.eps" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Figures/Calibration/2000_mV_20_mV_0124.eps" afterPath="$PROJECT_DIR$/Figures/Calibration/2000_mV_20_mV_0124.eps" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Figures/Calibration/2520_mV_20_mV_0124.eps" afterPath="$PROJECT_DIR$/Figures/Calibration/2520_mV_20_mV_0124.eps" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Figures/Calibration/3000_mV_20_mV_0124.eps" afterPath="$PROJECT_DIR$/Figures/Calibration/3000_mV_20_mV_0124.eps" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Figures/Calibration/3520_mV_20_mV_0124.eps" afterPath="$PROJECT_DIR$/Figures/Calibration/3520_mV_20_mV_0124.eps" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Figures/Calibration/4000_mV_20_mV_0124.eps" afterPath="$PROJECT_DIR$/Figures/Calibration/4000_mV_20_mV_0124.eps" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Figures/Calibration/4520_mV_20_mV_0124.eps" afterPath="$PROJECT_DIR$/Figures/Calibration/4520_mV_20_mV_0124.eps" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Figures/Calibration/5000_mV_20_mV_0124.eps" afterPath="$PROJECT_DIR$/Figures/Calibration/5000_mV_20_mV_0124.eps" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Figures/Calibration/5520_mV_20_mV_0124.eps" afterPath="$PROJECT_DIR$/Figures/Calibration/5520_mV_20_mV_0124.eps" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Figures/Calibration/6000_mV_20_mV_0124.eps" afterPath="$PROJECT_DIR$/Figures/Calibration/6000_mV_20_mV_0124.eps" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Figures/Calibration/6520_mV_20_mV_0124.eps" afterPath="$PROJECT_DIR$/Figures/Calibration/6520_mV_20_mV_0124.eps" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Figures/Calibration/7000_mV_20_mV_0124.eps" afterPath="$PROJECT_DIR$/Figures/Calibration/7000_mV_20_mV_0124.eps" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Figures/Calibration/7520_mV_20_mV_0124.eps" afterPath="$PROJECT_DIR$/Figures/Calibration/7520_mV_20_mV_0124.eps" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Figures/Calibration/Americium_300_sec.Chn.eps" afterPath="$PROJECT_DIR$/Figures/Calibration/Americium_300_sec.Chn.eps" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Figures/Calibration/pulseLinear.eps" afterPath="$PROJECT_DIR$/Figures/Calibration/pulseLinear.eps" />
-    </list>
+    <list default="true" id="18cd4a51-4402-44f8-89cf-c3f8801e920b" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -70,11 +35,10 @@
       <file leaf-file-name="Analysis.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Analysis.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="583">
-              <caret line="450" column="0" lean-forward="true" selection-start-line="450" selection-start-column="0" selection-end-line="450" selection-end-column="0" />
+            <state relative-caret-position="551">
+              <caret line="876" column="23" lean-forward="true" selection-start-line="876" selection-start-column="23" selection-end-line="876" selection-end-column="23" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
-                <element signature="e#36569#40098#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -470,14 +434,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1200" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.28061768" sideWeight="0.5" order="1" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32920355" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17522123" sideWeight="0.5021299" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17522123" sideWeight="0.4978701" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17522123" sideWeight="0.4978701" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3283186" sideWeight="0.4978701" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -539,7 +503,6 @@
           <caret line="400" column="4" lean-forward="false" selection-start-line="400" selection-start-column="4" selection-end-line="400" selection-end-column="4" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#36569#40098#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -569,7 +532,6 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#36569#40098#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -599,7 +561,6 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#36569#40098#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -629,7 +590,6 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#36569#40098#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -659,7 +619,6 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#36569#40098#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -689,7 +648,6 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#36569#40098#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -719,7 +677,6 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#36569#40098#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -760,7 +717,6 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#36569#40098#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -791,7 +747,6 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#36569#40098#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -822,7 +777,6 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#36569#40098#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -889,11 +843,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Analysis.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="583">
-          <caret line="450" column="0" lean-forward="true" selection-start-line="450" selection-start-column="0" selection-end-line="450" selection-end-column="0" />
+        <state relative-caret-position="551">
+          <caret line="876" column="23" lean-forward="true" selection-start-line="876" selection-start-column="23" selection-end-line="876" selection-end-column="23" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#36569#40098#0" expanded="false" />
           </folding>
         </state>
       </provider>
