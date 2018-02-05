@@ -1062,7 +1062,7 @@ def BindingEnergyEstimate(A,Z):
 #Errs = branchingRatio_FourPeaks('Decay_3')[1]
 #calculateBranchRatio(Values,Errs)
 #branchingRatio_Largest('Decay_3')
-print("Order of magnitude estimate for 212Bi->208Tl is {} MeV, and for 212Po->208Pb it is {} MeV.".format(BindingEnergyEstimate(212,83),BindingEnergyEstimate(212,84)))
+print("Order of magnitude estimate for 212Bi->208Tl is {} MeV, and for 212Po->208Pb it is {} MeV".format(BindingEnergyEstimate(212,83),BindingEnergyEstimate(212,84)))
 
 
 ############### For Vincent to have fun with ####################################
