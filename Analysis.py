@@ -150,7 +150,6 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     popt, pcov = curve_fit(expGaussMul, x, y, p0=p0, maxfev=5000000)
     npara = len(p0)
     rchi, dof = reducedChiSquare(y, expGaussMul(x, *popt), yerr, npara)
-<<<<<<< HEAD
     xx, xx_e = convertChannelToEnergy(x)
     x0, x0_e = convertChannelToEnergy(x0)
     left, l_e = convertChannelToEnergy(left)
@@ -161,15 +160,6 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     plt.xlabel('Energy (MeV)')
     plt.ylabel(r'$^{212}$Bi Decay to $^{208}$Tl'+'\nChannel Counts')
 #    plt.ylim((-100,3400))
-=======
-    plt.errorbar(x+x0-left, y, yerr=yerr,fmt='+', elinewidth=1.5 ,capsize=3, ecolor='b', \
-                 label='Data', linestyle='None', markersize=5 ,color='k')
-    plt.plot(x+x0-left, expGaussMul(x, *popt), '-r', label='Fit', linewidth=2)
-    plt.legend(loc=2)
-    plt.xlabel('MCA Channel Number')
-    plt.ylabel('Counts')
-    plt.ylim((-100,3400))
->>>>>>> 35f3570c4e8f42ba3e109716721c33d48f1fd7c7
     perr = np.sqrt(np.diag(pcov))
     
     for i in range(0,len(popt),4):
@@ -183,9 +173,8 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     # Plot residuals
     d = y-expGaussMul(x,*popt)
     axes = plt.gca()
-    plotStudRes(axes, d, x, yerr, res_tick=res_tick, x0=x0, left=left)
-    
-<<<<<<< HEAD
+    plotStudRes(axes, d, xx, yerr, res_tick=res_tick, x0=x0, left=left)  
+
 #    ax = fig.add_subplot(111)
 #    ax.annotate('#1', xy=(convertChannelToEnergy(popt[3]-2, noErr=True), 200), xytext=(convertChannelToEnergy(popt[3]-2, noErr=True), 200+400),\
 #            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
@@ -195,18 +184,6 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
 #            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
 #    ax.annotate('#4', xy=(convertChannelToEnergy(popt[15]-1, noErr=True), 1200), xytext=(convertChannelToEnergy(popt[15]-1, noErr=True), 1200+400),\
 #            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
-=======
-    print(popt)
-    ax = fig.add_subplot(111)
-    ax.annotate('#1', xy=(popt[3]-2, 200), xytext=(popt[3]-2, 200+400),\
-            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
-    ax.annotate('#2', xy=(popt[7]-2, 200), xytext=(popt[7]-2, 200+400),\
-            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
-    ax.annotate('#3', xy=(popt[11]-2, 2700), xytext=(popt[11]-2, 2700+400),\
-            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
-    ax.annotate('#4', xy=(popt[15]-1, 1200), xytext=(popt[15]-1, 1200+400),\
-            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
->>>>>>> 35f3570c4e8f42ba3e109716721c33d48f1fd7c7
 
     plt.show()
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
@@ -468,13 +445,8 @@ def convertChannelToEnergy(channelData, err=0, noErr=False):
     m_e = slopeErr
     b_e = interceptErr
     energyData = m*channelData + b
-<<<<<<< HEAD
     errProp = np.sqrt((m*err)**2+(m_e*channelData)**2+b_e**2)
     if not noErr:
-=======
-    if err != None:
-        errProp = [np.sqrt((m*err[n])**2+interceptErr**2+(channelData[n]*slopeErr)**2) for n in range(len(err))]
->>>>>>> 35f3570c4e8f42ba3e109716721c33d48f1fd7c7
         return energyData, errProp
     else:
         return energyData
@@ -753,12 +725,9 @@ def calculateStoppingPower(folderName):
     # plot away
     fig = plt.figure(figsize=(8, 6))
     plt.errorbar(t, S, yerr=Serr, xerr=t_err, fmt='+', elinewidth=1, capsize=2, ecolor='b', label='Data', linestyle='None', markersize=4, color='b')
-<<<<<<< HEAD
+
     plt.xlabel(r'Thickness (g$\cdot$cm$^{-2}$)')
 #    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
-=======
-    plt.xlabel('Thickness (kg/cm^2)')
->>>>>>> 35f3570c4e8f42ba3e109716721c33d48f1fd7c7
     plt.ylabel('Stopping Power (MeV/cm)')
 
 
@@ -1070,26 +1039,11 @@ def calculateBranchRatio(Params,ParamErrs):
 #halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
 
 
-<<<<<<< HEAD
+
 #Values = branchingRatio_FourPeaks('Decay_3')[0]
 #Errs = branchingRatio_FourPeaks('Decay_3')[1]
-=======
-Values = branchingRatio_Largest('Decay_3')[0]
-
-Errs = branchingRatio_Largest('Decay_3')[1]
-
-
->>>>>>> 35f3570c4e8f42ba3e109716721c33d48f1fd7c7
 #calculateBranchRatio(Values,Errs)
-
-<<<<<<< HEAD
 branchingRatio_Largest('Decay_3')
-=======
-#Errs = branchingRatio_FourPeaks('Decay_3')[1]
-#calculateBranchRatio(Values,Errs)
-#branchingRatio_Largest('Decay_3')
->>>>>>> 35f3570c4e8f42ba3e109716721c33d48f1fd7c7
-
 
 
 ############### For Vincent to have fun with ####################################
