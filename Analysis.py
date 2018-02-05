@@ -58,7 +58,7 @@ def plotStudRes(ax, d, xx , yerr, res_tick, x0=0, left=0):
     ax2.axhline(y=0, color='r', linestyle='-', linewidth=2)
     ax.tick_params(axis='both', direction='in')
     ax2.tick_params(axis='both', direction='in')
-    ax2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='+', elinewidth=1.5 ,capsize=3, ecolor='b', \
+    ax2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='+', elinewidth=1.5 ,capsize=2, ecolor='b', \
                  label='Data', linestyle='None', markersize=3 ,color='k')
 
 def reducedChiSquare(y,fx,yerr, npara):
@@ -153,9 +153,11 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     xx, xx_e = convertChannelToEnergy(x)
     x0, x0_e = convertChannelToEnergy(x0)
     left, l_e = convertChannelToEnergy(left)
-    plt.errorbar(xx+x0-left, y, yerr=yerr, xerr=xx_e+x0_e-l_e, fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
-                 label='Data', linestyle='None', markersize=3 ,color='k')
-    plt.plot(xx+x0-left, expGaussMul(x, *popt), '-r', label='Fit', linewidth=2)
+#    plt.errorbar(xx+x0-left, y, yerr=yerr, xerr=xx_e+x0_e-l_e, fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
+#                 label='Data', linestyle='None', markersize=3 ,color='k')
+    plt.errorbar(xx+x0-left, y, fmt='+', elinewidth=1.5 ,capsize=3, ecolor='b', \
+                 label='Data', linestyle='None', markersize=7 ,color='k')
+#    plt.plot(xx+x0-left, expGaussMul(x, *popt), '-r', label='Fit', linewidth=2)
 #    plt.legend(loc=2)
     plt.xlabel('Energy (MeV)')
     plt.ylabel(r'$^{212}$Bi Decay to $^{208}$Tl'+'\nChannel Counts')
@@ -169,6 +171,10 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
         print('Mean %d (Scaled): %f $\pm$ %f\n'%(i/4+1, popt[i+3], perr[i+3]))
     print('RChi: %f'%(rchi))
     print('DOF: %d'%(dof))
+    for i in range(int(len(popt)/4)):
+        temp = popt[i*4:(i+1)*4]
+        plt.plot(xx+x0-left, expGauss(x, *temp), label='#%d'%(i+1), linewidth=3)
+    plt.legend(loc=2)
             
     # Plot residuals
     d = y-expGaussMul(x,*popt)
@@ -184,6 +190,7 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
 #            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
 #    ax.annotate('#4', xy=(convertChannelToEnergy(popt[15]-1, noErr=True), 1200), xytext=(convertChannelToEnergy(popt[15]-1, noErr=True), 1200+400),\
 #            arrowprops=dict(arrowstyle="->", connectionstyle="arc3"),horizontalalignment='center')
+    
 
     plt.show()
     fig.savefig(filePathtobeSaved+'.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
@@ -594,7 +601,7 @@ def pressureData(folderName):
         
     for file in data:
         popt, perr, rchi, dof = fitAlphaPeak(outPath+'/'+file, folderName+'/'+file, p0=[60, 1, 0.7, 10],\
-                                          right=80, filenm=file)
+                                          right=30, filenm=file)
         peak_means.append(popt[3])
         peak_means_e.append(perr[3])
         
@@ -609,7 +616,7 @@ def pressureData(folderName):
     b_e = perr[1]
     xx = np.linspace(min(x), max(x))
     plt.plot(xx, m*xx+b*np.ones(len(xx)),label='Fit', color='r')
-    plt.errorbar(x, y, yerr=yerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
+    plt.errorbar(x, y, yerr=yerr, fmt='o', elinewidth=2 ,capsize=3, ecolor='b', \
                  label='Data', linestyle='None', markersize=4,color='b')
     npara = 2
     rchi, dof = reducedChiSquare(y, m*x+b*np.ones(len(x)), yerr, npara)
@@ -724,12 +731,14 @@ def calculateStoppingPower(folderName):
     
     # plot away
     fig = plt.figure(figsize=(8, 6))
-    plt.errorbar(t, S, yerr=Serr, xerr=t_err, fmt='+', elinewidth=1, capsize=2, ecolor='b', label='Data', linestyle='None', markersize=4, color='b')
+    plt.errorbar(t, S, yerr=Serr, xerr=t_err, fmt='o', elinewidth=1.5, capsize=3, ecolor='b', label='Data', linestyle='None', \
+                 markersize=6, color='k')
 
     plt.xlabel(r'Thickness (g$\cdot$cm$^{-2}$)')
 #    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
     plt.ylabel('Stopping Power (MeV/cm)')
-
+    outPath = 'Figures/Pressure'
+    fig.savefig(outPath+'/StoppingPower_thickeness.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
 
 ####################################################################################################################
 ################## Fit bismuth activity data in order to extract lead and bismuth half-lives #######################
@@ -745,8 +754,8 @@ def activityFit(filePathtobeSaved, x, y, yerr, guess):
     perr = np.sqrt(np.diag(pcov))
     npara = 4
     rchi, dof = reducedChiSquare(y, activityFitFunc(x, *popt), yerr, npara)
-    plt.errorbar(x, y, yerr=yerr, fmt='+', elinewidth=1 ,capsize=2, ecolor='b', \
-                 label='Data', linestyle='None', markersize=4,color='b')
+    plt.errorbar(x, y, yerr=yerr, fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
+                 label='Data', linestyle='None', markersize=3,color='k')
     xx = np.linspace(min(x), max(x))
     plt.plot(xx, activityFitFunc(xx, *popt), '-r', label='Fit')
     plt.legend()
@@ -793,9 +802,9 @@ def halflifeMeasurement(outFileName, folderName):
     l1, l2 = popt[0], popt[1]
     l1_e, l2_e = perr[0], perr[1]
     
-    T1 = np.log(2)/l1/3600 # in hour
+    T1 = np.log(2)/l1/60 # in hour
     T2 = np.log(2)/l2/3600 # in hour
-    T1_e = np.log(2)/3600/l1**2*l1_e
+    T1_e = np.log(2)/60/l1**2*l1_e
     T2_e = np.log(2)/3600/l2**2*l2_e
     print('Tau1: %.1f \pm %.1f'%(T1, T1_e))
     print('Tau1: %.1f \pm %.1f'%(T2, T2_e))
@@ -1037,13 +1046,14 @@ def calculateBranchRatio(Params,ParamErrs):
 #                         [8, 50, 3, 60, 60, 3, 310, 70, 2], left=70, right=30, res_tick=[-2,0,2])
 
 #halflifeMeasurement('OneDayCollectionTime', 'Decay_3')
+#halflifeMeasurement('OneHourCollectionTime', 'Decay_60_min_1')
 
 
 
-#Values = branchingRatio_FourPeaks('Decay_3')[0]
+Values = branchingRatio_FourPeaks('Decay_3')[0]
 #Errs = branchingRatio_FourPeaks('Decay_3')[1]
 #calculateBranchRatio(Values,Errs)
-branchingRatio_Largest('Decay_3')
+#branchingRatio_Largest('Decay_3')
 
 
 ############### For Vincent to have fun with ####################################
