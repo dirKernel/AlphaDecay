@@ -929,18 +929,29 @@ def branchingRatio_Largest(InFileName):
         plt.plot(x, expGauss(x, *temp))
 
     # convert mean channels to energies
-    for i in range(0, len(popt), 4):
-        popt[i+3], perr[i+3] = convertChannelToEnergy(popt[i+3], err=perr[i+3])
+    #for i in range(0, len(popt), 4):
+     #   popt[i+3], perr[i+3] = convertChannelToEnergy(popt[i+3], err=perr[i+3])
 
+<<<<<<< HEAD
+=======
+    print(popt)
+    print(perr)
+>>>>>>> 1a8d4df9c1a28eec7bb7b9431626565807aa8371
     # make fitted parameter into a matrix, as well as the fitting error in another matrix
     l = int(len(popt)/4)
     valueToReturn, errToReturn = np.zeros((l,4)), np.zeros((l,4))
     for i in range(l):
         valueToReturn[i] = popt[4*i:4*i+4]
         errToReturn[i] = perr[4*i:4*i+4]
+<<<<<<< HEAD
 #        print(popt[4*i:4*i+4])
     print(valueToReturn)
     print(errToReturn)
+=======
+       # print(popt[4*i:4*i+4])
+#    print(valueToReturn)
+#    print(errToReturn)
+>>>>>>> 1a8d4df9c1a28eec7bb7b9431626565807aa8371
 #    valueToReturn[0], valueToReturn[1] = valueToReturn[1], valueToReturn[0]
 #    errToReturn[0], errToReturn[1] = errToReturn[1], errToReturn[0]
 #    print(valueToReturn)
@@ -954,7 +965,7 @@ def branchingRatio_Largest(InFileName):
 
 def integrateExpGauss(params):
     # params is the vector (A,lambda, sigma, mu) describing the expgaussian integrand
-    return quad(expGauss, 1200, 1500, args=(params[0],params[1],params[2],params[3]))[0]
+    return quad(expGauss, 1200, 1900, args=(params[0],params[1],params[2],params[3]))[0]
 
 def diffExpGaussSigma(x,params):
     #returns the derivative of ExpGaussFunction with respect to sigma as function of x
@@ -965,7 +976,7 @@ def diffExpGaussSigma(x,params):
     return A*l/(2*s**2)*np.exp(-(x-m)**2/(2*s**2))*(np.sqrt(2/np.pi)*(x-m-l*(s**2))+(l**2)*(s**3)*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s))))
 
 def integrateDiffExpGaussSigma(params):
-    return quad(diffExpGaussSigma, 1200, 1500, args=(params))[0]
+    return quad(diffExpGaussSigma, 1200, 1900, args=(params))[0]
 
 
 def diffExpGaussLambda(x, params):
@@ -978,7 +989,7 @@ def diffExpGaussLambda(x, params):
     return A/2*np.exp(l/2*(2*x-2*m+l*s*s))*((1+l*(x-m+l*s**2))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))-np.sqrt(2/np.pi)*l*s*(np.exp(-(x-m+l*s**2)**2/(2*s**2))))
 
 def integrateDiffExpGaussLambda(params):
-    return quad(diffExpGaussLambda, 1200, 1500, args=(params))[0]
+    return quad(diffExpGaussLambda, 1200, 1900, args=(params))[0]
 
 
 def diffExpGaussA(x,params):
@@ -989,7 +1000,7 @@ def diffExpGaussA(x,params):
     return l/2*np.exp(l/2*(2*x-2*m+l*s*s))*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s)))
 
 def integrateDiffExpGaussA(params):
-    return quad(diffExpGaussA, 1200, 1500, args=(params))[0]
+    return quad(diffExpGaussA, 1200, 1900, args=(params))[0]
 
 
 def diffExpGaussMu(x,params):
@@ -1002,7 +1013,7 @@ def diffExpGaussMu(x,params):
     return A*l/(2*np.sqrt(np.pi)*s)*np.exp(l/2*(2*x-2*m+l*s*s))*(np.sqrt(2)*(np.exp(-(x-m+l*s**2)**2/(2*s**2)))-np.sqrt(np.pi)*l*s*(1-sp.special.erf((x+l*s*s-m)/(math.sqrt(2)*s))))
 
 def integrateDiffExpGaussMu(params):
-    return quad(diffExpGaussMu, 1200, 1500, args=(params))[0]
+    return quad(diffExpGaussMu, 1200, 1900, args=(params))[0]
 
 def calculateBranchRatio(Params,ParamErrs):
     # Params is a lists of lists. Each embedded list is a set of parameters for a single transition fit, [A,l,s,m]
@@ -1065,9 +1076,11 @@ def calculateBranchRatio(Params,ParamErrs):
 
     totalArea = sum(b)
     TOTAL = totalArea
+    print(TOTAL)
 
     totalAreaErr = np.sqrt(sum([bErr[n]**2 for n in range(4)]))
     TOTALErr = totalAreaErr
+    print(TOTALErr)
 
 
     B = np.multiply((1 / totalArea), b)
@@ -1081,6 +1094,35 @@ def calculateBranchRatio(Params,ParamErrs):
     print(sum(B))
     print("Branching ratios: "+str(B))
     print("Errors on ratios: "+str(bErr))
+
+def calculateBigBranchRatio(Params, ParamErrs):
+    b1 = 23865.2182045
+    b1_e = 0.0186002423895
+
+    b2 = sum([integrateExpGauss(Params[i]) for i in range(len(Params))])
+
+
+
+    #propagate error on b2
+    err = 0.0
+    for n in range(len(ParamErrs)):  # all fitted function parameter errors propogate so loop through all of them
+        paramErrs = ParamErrs[n]
+        derivs = [
+            integrateDiffExpGaussA(Params[n]),
+            integrateDiffExpGaussLambda(Params[n]),
+            integrateExpGauss(Params[n]),
+            integrateDiffExpGaussMu(Params[n])]
+        err = err + sum([(derivs[j] * paramErrs[j]) ** 2 for j in range(2)])
+
+    b2_e = np.sqrt(err)
+
+
+
+    B = [b1/(b1+b2),b2/(b1+b2)]
+    B_err = [np.sqrt((b1_e*b2/(b1+b2)**2)**2+(b2_e*b1/(b1+b2)**2)**2),np.sqrt((b1_e*b1/(b1+b2)**2)**2+(b2_e*b2/(b1+b2)**2)**2)]
+    print(B)
+    print(B_err)
+    return B, B_err
 
 ####################################################################################################################
 ####################################### Binding energy estimate ####################################################
@@ -1123,6 +1165,13 @@ def BindingEnergyEstimate(A,Z):
 
 
 Values = branchingRatio_FourPeaks('Decay_3')[0]
+<<<<<<< HEAD
+Errs = branchingRatio_FourPeaks('Decay_3')[1]
+#calculateBranchRatio(Values,Errs)
+#Values = branchingRatio_Largest('Decay_3')[0]
+#Errs = branchingRatio_Largest('Decay_3')[1]
+#calculateBigBranchRatio(Values,Errs)
+=======
 #Errs = branchingRatio_FourPeaks('Decay_3')[1]
 #calculateBranchRatio(Values,Errs)
 #branchingRatio_Largest('Decay_60_min_1')
@@ -1130,6 +1179,7 @@ Values = branchingRatio_FourPeaks('Decay_3')[0]
 #print("Order of magnitude estimate for 212Bi->208Tl is {} MeV, and for 212Po->208Pb it is {} MeV".format(BindingEnergyEstimate(212,83),BindingEnergyEstimate(212,84)))
 
 
+>>>>>>> f02e510dc43042cccee0335712e444eeb89c857d
 ############### For Vincent to have fun with ####################################
 #popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaksGaussMul("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
 #                         [6, 10, 60, 20, 310, 30, 3, 0.01], left=40, right=20, res_tick=[-2,0,2], sigmaFixed=True)
