@@ -79,7 +79,7 @@ def plotStudRes(ax, d, xx , yerr, res_tick, x0=0, left=0):
     ax2.axhline(y=0, color='r', linestyle='-', linewidth=2)
     ax.tick_params(axis='both', direction='in')
     ax2.tick_params(axis='both', direction='in')
-    ax2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='+', elinewidth=1.5 ,capsize=2, ecolor='b', \
+    ax2.errorbar(xx+x0-left, stu_d, yerr=stu_d_err, fmt='o', elinewidth=1.5 ,capsize=2, ecolor='b', \
                  label='Data', linestyle='None', markersize=3 ,color='k')
 
 def reducedChiSquare(y,fx,yerr, npara):
@@ -175,13 +175,15 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     x0, x0_e = convertChannelToEnergy(x0)
     left, l_e = convertChannelToEnergy(left)
 #    plt.errorbar(xx+x0-left, y, yerr=yerr, xerr=xx_e+x0_e-l_e, fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
+#                 label='Data', linestyle='None', markersize=4 ,color='k')
+#    plt.errorbar(xx+x0-left, y, fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
 #                 label='Data', linestyle='None', markersize=3 ,color='k')
-    plt.errorbar(xx+x0-left, y, fmt='+', elinewidth=1.5 ,capsize=3, ecolor='b', \
-                 label='Data', linestyle='None', markersize=7 ,color='k')
-#    plt.plot(xx+x0-left, expGaussMul(x, *popt), '-r', label='Fit', linewidth=2)
-#    plt.legend(loc=2)
+    xxx = np.linspace(min(x),max(x),1000)
+    xxxx = np.linspace(min(xx+x0-left), max(xx+x0-left), 1000)
+#    plt.plot(xxxx, expGaussMul(xxx, *popt), '-r', label='Fit', linewidth=2)
+    plt.legend(loc=2)
     plt.xlabel('Energy (MeV)')
-    plt.ylabel(r'$^{212}$Bi Decay to $^{208}$Tl'+'\nChannel Counts')
+    plt.ylabel(r'$^{212}$Po Decay to $^{208}$Pb'+'\nChannel Counts')
 #    plt.ylim((-100,3400))
     perr = np.sqrt(np.diag(pcov))
     
@@ -194,13 +196,15 @@ def expGaussFitMul(filePathtobeSaved, x, y, yerr, p0, x0, left, res_tick=[-3,0,3
     print('DOF: %d'%(dof))
     for i in range(int(len(popt)/4)):
         temp = popt[i*4:(i+1)*4]
-        plt.plot(xx+x0-left, expGauss(x, *temp), label='#%d'%(i+1), linewidth=3)
+        temp_x = np.linspace(min(xx+x0-left),max(xx+x0-left),2000)
+        temp_fit = np.linspace(min(x),max(x),2000)
+        plt.plot(temp_x, expGauss(temp_fit, *temp), label='#%d'%(i+1), linewidth=3)
     plt.legend(loc=2)
             
     # Plot residuals
-    d = y-expGaussMul(x,*popt)
-    axes = plt.gca()
-    plotStudRes(axes, d, xx, yerr, res_tick=res_tick, x0=x0, left=left)  
+#    d = y-expGaussMul(x,*popt)
+#    axes = plt.gca()
+#    plotStudRes(axes, d, xx, yerr, res_tick=res_tick, x0=x0, left=left)  
 
 #    ax = fig.add_subplot(111)
 #    ax.annotate('#1', xy=(convertChannelToEnergy(popt[3]-2, noErr=True), 200), xytext=(convertChannelToEnergy(popt[3]-2, noErr=True), 200+400),\
@@ -625,7 +629,6 @@ def pressureData(folderName):
                                           right=30, filenm=file)
         peak_means.append(popt[3])
         peak_means_e.append(perr[3])
-<<<<<<< HEAD
         
     fig = plt.figure(figsize=(8,6))
     x = pressure
@@ -656,8 +659,6 @@ def pressureData(folderName):
     
     plt.show()
     fig.savefig(outPath+'/StoppingPower.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
-=======
->>>>>>> 6602ffa5c75a18474b8990c3cf059d4ee144826a
     
     #Target thickness is (air density) * (distance b/w source and detector)
     #Using the names given in the notebook, the distance between the source and the
@@ -785,26 +786,15 @@ def calculateStoppingPower(folderName):
     
     # plot away
     fig = plt.figure(figsize=(8, 6))
-<<<<<<< HEAD
-    plt.errorbar(t, S, yerr=Serr, xerr=t_err, fmt='o', elinewidth=1.5, capsize=3, ecolor='b', label='Data', linestyle='None', \
-                 markersize=6, color='k')
-
-=======
     plt.errorbar(t, S, yerr=Serr, xerr=t_err, fmt='o', elinewidth=1.5 ,capsize=3, ecolor='b', \
                  label='Data', linestyle='None', markersize=3,color='k')
->>>>>>> 6602ffa5c75a18474b8990c3cf059d4ee144826a
     plt.xlabel(r'Thickness (g$\cdot$cm$^{-2}$)')
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
     plt.ylabel('Stopping Power (MeV/cm)')
-<<<<<<< HEAD
     outPath = 'Figures/Pressure'
     fig.savefig(outPath+'/StoppingPower_thickeness.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
-=======
-    fig.savefig('Figures/Pressure/StoppingPower.eps', format='eps', dpi=1000, bbox_inches='tight', pad_inches=0.0)
+
     
-
-
->>>>>>> 6602ffa5c75a18474b8990c3cf059d4ee144826a
 
 ####################################################################################################################
 ################## Fit bismuth activity data in order to extract lead and bismuth half-lives #######################
@@ -923,14 +913,14 @@ def branchingRatio_FourPeaks(InFileName):
 def branchingRatio_Largest(InFileName):
     outFileName = 'Figures/BranchingRatio/'+InFileName+'_Largest' 
     spectrum = chnsum(InFileName)
-    left = 1830
-    right = 1852
+    left = 1820
+    right = 1839
     leftSpec = spectrum[left:right]
     y = leftSpec
     yerr = np.sqrt(y)
     x = np.arange(left,right)
     plt.plot(x,leftSpec)
-    p0 = [35000, 1, 1, left+20, 12000, 1, 1, left+15]
+    p0 = [35000, 1, 1, left+15, 12000, 1, 1, left+10]
     popt, perr, rchi, dof = expGaussFitMul(outFileName, x, y, yerr, p0=p0, x0=0, left=0, res_tick=[-2,0,2])
     
     # Plot each component convolution
@@ -942,17 +932,15 @@ def branchingRatio_Largest(InFileName):
     for i in range(0, len(popt), 4):
         popt[i+3], perr[i+3] = convertChannelToEnergy(popt[i+3], err=perr[i+3])
 
-    print(popt)
     # make fitted parameter into a matrix, as well as the fitting error in another matrix
     l = int(len(popt)/4)
-    print(l)
     valueToReturn, errToReturn = np.zeros((l,4)), np.zeros((l,4))
     for i in range(l):
         valueToReturn[i] = popt[4*i:4*i+4]
         errToReturn[i] = perr[4*i:4*i+4]
-        print(popt[4*i:4*i+4])
-#    print(valueToReturn)
-#    print(errToReturn)
+#        print(popt[4*i:4*i+4])
+    print(valueToReturn)
+    print(errToReturn)
 #    valueToReturn[0], valueToReturn[1] = valueToReturn[1], valueToReturn[0]
 #    errToReturn[0], errToReturn[1] = errToReturn[1], errToReturn[0]
 #    print(valueToReturn)
@@ -1119,7 +1107,7 @@ def BindingEnergyEstimate(A,Z):
 #m_calib, m_calib_e, b_calib, b_calib_e = calibratePulses('CalibrationWBias_2')
 #m_press, m_press_e, b_press, b_press_e, Energy, Energy_e, Thickness, Thickness_e = pressureData('PressureWBias_1')
 
-calculateStoppingPower('PressureWBias_1')
+#calculateStoppingPower('PressureWBias_1')
 
 
 #popt_am, perr_am, rchi_am, dof_am = fitAlphaPeaks("Figures/Calibration/Americium_300_sec.Chn", "Americium/Americium_300_sec.Chn", \
@@ -1137,11 +1125,9 @@ calculateStoppingPower('PressureWBias_1')
 Values = branchingRatio_FourPeaks('Decay_3')[0]
 #Errs = branchingRatio_FourPeaks('Decay_3')[1]
 #calculateBranchRatio(Values,Errs)
-#branchingRatio_Largest('Decay_3')
-<<<<<<< HEAD
-=======
+#branchingRatio_Largest('Decay_60_min_1')
+
 #print("Order of magnitude estimate for 212Bi->208Tl is {} MeV, and for 212Po->208Pb it is {} MeV".format(BindingEnergyEstimate(212,83),BindingEnergyEstimate(212,84)))
->>>>>>> 6602ffa5c75a18474b8990c3cf059d4ee144826a
 
 
 ############### For Vincent to have fun with ####################################
